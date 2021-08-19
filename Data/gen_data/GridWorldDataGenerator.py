@@ -87,10 +87,10 @@ class GRIDWORLD_DATAGENERATOR:
 
 #%% example
         
-signal = np.arange(10)
-a = GRIDWORLD_DATAGENERATOR(signal, signalFreq=1, waveVelocity=1, width=1, world_width=20, minC=0.5, maxC=2)
-newSignal = a.WaveGenerate(x=6,y=0,centerX=0,centerY=0)
-a.show()
+# signal = np.arange(10)
+# a = GRIDWORLD_DATAGENERATOR(signal, signalFreq=1, waveVelocity=1, width=1, world_width=20, minC=0.5, maxC=2)
+# newSignal = a.WaveGenerate(x=6,y=0,centerX=0,centerY=0)
+# a.show()
 
 #%% test secttion
 # import os
