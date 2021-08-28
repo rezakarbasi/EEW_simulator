@@ -18,19 +18,25 @@ from geopy.distance import geodesic
 
 
 class Parts:
-    def __init__(self,width,world_width,minC=0.5,maxC=2):
+    def __init__(self, center, width,world_width,minC=0.5,maxC=2):
         self.width=width
         self.world_width=world_width
         self.world_height=world_width
         self.minC=minC
         self.maxC=maxC
+        
+        self.center = center
 
         width_count=(int)(world_width/width+1)
         self.c=np.random.rand(width_count,width_count)*(maxC-minC)+minC
     
     def GetC(self,i,j):
+        i -= self.center.lat - self.width/2
+        j -= self.center.long - self.width/2
+
         i=(int)(i/self.width)
         j=(int)(j/self.width)
+        # print(self.c.shape)
         return self.c[i,j]
 
     def FindCoeff(self,x1,y1,x2,y2,resolution=40):
@@ -64,11 +70,11 @@ class Parts:
         
 
 class GRIDWORLD_DATAGENERATOR:
-    def __init__(self, signal, signalFreq, waveVelocity, width, world_width, minC, maxC):
+    def __init__(self, center, signalFreq, waveVelocity, width, world_width, minC, maxC, signal=None):
         self.signal = signal
         self.signalFreq=signalFreq
         self.waveVelocity = waveVelocity
-        self.partHandler = Parts(width, world_width, minC, maxC)
+        self.partHandler = Parts(center=center, width=width, world_width=world_width, minC=minC, maxC=maxC)
     
     def GetSignal(self,signal):
         self.signal=signal
@@ -81,16 +87,16 @@ class GRIDWORLD_DATAGENERATOR:
         
         return np.array([0 for i in range(deltaT)]+list(self.signal*coeff))
     
-    def show(self):
+    def plot(self):
         self.partHandler.plot()
 
 
 #%% example
         
 # signal = np.arange(10)
-# a = GRIDWORLD_DATAGENERATOR(signal, signalFreq=1, waveVelocity=1, width=1, world_width=20, minC=0.5, maxC=2)
+# a = GRIDWORLD_DATAGENERATOR(signal=signal, signalFreq=1, waveVelocity=1, width=1, world_width=20, minC=0.5, maxC=2)
 # newSignal = a.WaveGenerate(x=6,y=0,centerX=0,centerY=0)
-# a.show()
+# a.plot()
 
 #%% test secttion
 # import os
