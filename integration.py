@@ -5,11 +5,13 @@ import os
 import numpy as np
 
 from Algorithm.PgaOptimization import PGA_OPTIMIZATION
+from Algorithm.PgaOptimizationTorch import PGA_OPTIMIZOR_TORCH
 
 from Data.gen_data.DataGeneration import DATA_GENERATOR
 from Data.real_data.LoadData import LOAD_REAL_DATA
 
 from Objects.objects import PLACES,STATION_RECORD,EARTHQUAKE_OBJ
+
 
 SPEED = 10 # frame/s
 
@@ -22,6 +24,8 @@ dataset = DATA_GENERATOR(center=PLACES(10.0, -20.0),numStations=10,world_width=1
 
 signal = dataset.earthquake.signal
 outTime ,outLat ,outLong, outC, outRec = PGA_OPTIMIZATION(dataset.stations).run()
+# outTime ,outLat ,outLong, outC, outRec = PGA_OPTIMIZOR_TORCH(dataset.stations).run()
+
 
 #%% animation section
 import matplotlib.pyplot as plt
