@@ -17,50 +17,23 @@
    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;hafeza&lt;/p&gt;&lt;p&gt;mard nekoonam namirad ehtemalan&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QRadioButton" name="radioButton">
+   <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>260</x>
-      <y>200</y>
-      <width>95</width>
-      <height>20</height>
+      <x>100</x>
+      <y>120</y>
+      <width>93</width>
+      <height>28</height>
      </rect>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
     </property>
     <property name="text">
-     <string>fg</string>
+     <string>PushButton</string>
     </property>
-    <property name="checked">
+    <property name="checkable">
      <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="comboBox">
-    <property name="geometry">
-     <rect>
-      <x>270</x>
-      <y>90</y>
-      <width>201</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>yaroo</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>lamasab</string>
-     </property>
-    </item>
-   </widget>
-   <widget class="QComboBox" name="comboBox_2">
-    <property name="geometry">
-     <rect>
-      <x>260</x>
-      <y>140</y>
-      <width>73</width>
-      <height>22</height>
-     </rect>
     </property>
    </widget>
   </widget>
