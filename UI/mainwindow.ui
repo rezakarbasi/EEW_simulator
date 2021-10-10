@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>684</width>
-    <height>516</height>
+    <width>656</width>
+    <height>491</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,24 +17,62 @@
    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;hafeza&lt;/p&gt;&lt;p&gt;mard nekoonam namirad ehtemalan&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>100</x>
-      <y>120</y>
-      <width>93</width>
-      <height>28</height>
+      <x>0</x>
+      <y>0</y>
+      <width>651</width>
+      <height>441</height>
      </rect>
     </property>
-    <property name="autoFillBackground">
-     <bool>false</bool>
+    <property name="whatsThis">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;kjn&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
-    <property name="text">
-     <string>PushButton</string>
+    <property name="currentIndex">
+     <number>0</number>
     </property>
-    <property name="checkable">
-     <bool>true</bool>
-    </property>
+    <widget class="QWidget" name="DATA_TAB">
+     <attribute name="title">
+      <string>Data</string>
+     </attribute>
+     <widget class="QComboBox" name="DATA_COMBO">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>121</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="currentText">
+       <string extracomment="jn"/>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="ALG_TAB">
+     <attribute name="title">
+      <string>Algorithm</string>
+     </attribute>
+     <widget class="QPushButton" name="BTN">
+      <property name="geometry">
+       <rect>
+        <x>270</x>
+        <y>100</y>
+        <width>93</width>
+        <height>28</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>PushButton</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="RUN_TAB">
+     <attribute name="title">
+      <string>Run</string>
+     </attribute>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -42,7 +80,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>684</width>
+     <width>656</width>
      <height>26</height>
     </rect>
    </property>

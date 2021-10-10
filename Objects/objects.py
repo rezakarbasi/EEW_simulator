@@ -1,6 +1,33 @@
 import numpy as np
 from geopy.distance import geodesic
 
+class PARAMETER_TYPE:
+    def __init__(self,dataType,dataName:str,dataHelp:str,value=None):
+        self.type = dataType
+        self.name = dataName
+        self.help = dataHelp
+        self.value = value
+    
+    def setValue(self,value):
+        try :
+            self.value = self.type(value)
+        except:
+            raise Exception("input value is not like the specified data type !!!!!")
+            
+
+class UI_OBJ:
+    def __init__(self, *args):
+        self.parameters = []
+        for arg in args:
+            if type(arg)!=PARAMETER_TYPE:
+                raise Exception("Input must be from PARAMETER_TYPE !!!!!!!!!!!!!!!!!!")
+            
+            self.parameters.append(arg)
+            
+    def getParameter(self,idx):
+        return self.parameters[idx].value
+        
+
 class PLACES:
     def __init__(self,lat,long):
         self.lat = lat
