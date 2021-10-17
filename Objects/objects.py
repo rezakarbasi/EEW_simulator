@@ -13,7 +13,12 @@ class PARAMETER_TYPE:
             self.value = self.type(value)
         except:
             raise Exception("input value is not like the specified data type !!!!!")
-            
+
+    def __str__(self) -> str:
+        return self.name + " : " + str(self.value)
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
 class UI_OBJ:
     def __init__(self, *args):
@@ -26,6 +31,12 @@ class UI_OBJ:
             
     def getParameter(self,idx):
         return self.parameters[idx].value
+    
+    def __repr__(self) -> str:
+        out = self.__str__()
+        for p in self.parameters:
+            out+='\n\t'+str(p)
+        return out
         
 
 class PLACES:
