@@ -1,42 +1,3 @@
-# https://realpython.com/qt-designer-python/
-# https://www.riverbankcomputing.com/static/Docs/PyQt6/
-# https://nitratine.net/blog/post/how-to-import-a-pyqt5-ui-file-in-a-python-gui/
-# https://www.blog.pythonlibrary.org/2018/05/30/loading-ui-files-in-qt-for-python/
-
-# from PyQt5 import QtWidgets, uic
-# import sys
-# sys.path.append('./..')
-
-# from Data.gen_data.DataGeneration import DATA_GENERATOR
-
-# dataCombo = [DATA_GENERATOR(),"hafez","shiraZ"]
-
-# def fillCombo(combo,items):
-#     for i in items:
-#         combo.addItem(str(i))
-
-# class Ui(QtWidgets.QMainWindow):
-#     def __init__(self):
-#         super(Ui, self).__init__()
-#         uic.loadUi('mainwindow.ui', self)
-#         self.BTN.clicked.connect(self.onClick)
-        
-#         fillCombo(self.DATA_COMBO, dataCombo)
-#         self.DATA_COMBO.setCurrentIndex(0)
-#         self.DATA_COMBO.currentIndexChanged.connect(self.on_combobox_changed)
-
-#         self.show()
-    
-#     def on_combobox_changed(self,i=0):
-#         print(i)
-        
-#     def onClick(self):
-#         print('clicked')
-
-# app = QtWidgets.QApplication(sys.argv)
-# window = Ui()
-# app.exec_()
-
 #%%
 import sys
 sys.path.append('./../')
@@ -51,6 +12,32 @@ from Objects.objects import PARAMETER_TYPE,UI_OBJ
 dataCombo = [DATA_GENERATOR()]
 algCombo = [PGA_OPTIMIZATION()]#, PGA_OPTIMIZOR_TORCH()]
 
+def getLog(settings:list=[],tosave:list=[],name:list=[],saveTag=''):
+    import datetime
+    import os
+
+    thisTime = datetime.datetime.now()
+
+    savePath = './result/' + saveTag + '--' + str(thisTime)[:-7]+'/'
+    os.mkdir(savePath)
+
+    settingStr = "settings : \ntime : "+str(thisTime)+"\nsave tag : "+saveTag+"\n\n"
+    for s in settings:
+        settingStr+=str(s)+'\n'
+
+    with open(savePath+'settings.txt', 'w') as f:
+        f.write(settingStr)
+    
+    for file,name in zip(tosave,name):
+        if type(name)!=str:
+            raise Exception("names must be str !!")
+        
+        with open(savePath+name, 'w') as f:
+            f.write(file)
+    
+    return savePath
+
+
 #%% plot the results
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
@@ -59,7 +46,7 @@ import numpy as np
 
 SPEED = 10 # frame/s
 
-def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec):
+def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath):
     Writer = animation.writers['ffmpeg']
     writer = Writer(fps=SPEED, metadata=dict(artist='Me'), bitrate=1800)
 
@@ -139,7 +126,7 @@ def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec):
     textsIn = []
 
     anim = FuncAnimation(fig, animate, interval=int(1050/SPEED), frames=len(outTime))
-    anim.save('im.mp4', writer=writer)
+    anim.save(savePath + 'sim.mp4', writer=writer)
     fig.show()
 
 
@@ -203,7 +190,8 @@ class MainWindow(QTabWidget):
         signal = dataset.earthquake.signal
         outTime ,outLat ,outLong, outC, outRec = algorithm.run(dataset.stations)
         print('run successfully')
-        PlotResults(dataset ,signal ,outTime ,outLat ,outLong, outC, outRec)
+        savePath = getLog(settings=[dataset,algorithm],saveTag='') # TODO : tag must be get from the user
+        PlotResults(dataset ,signal ,outTime ,outLat ,outLong, outC, outRec, savePath)
         # print(outTime ,outLat ,outLong, outC, outRec)
         pass
 
