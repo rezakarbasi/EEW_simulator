@@ -4,7 +4,7 @@ from scipy.optimize import fsolve
 
 import sys
 sys.path.append('./')
-from Objects.objects import PLACES,STATION_RECORD,EARTHQUAKE_OBJ
+from Objects.objects import PLACES,STATION_RECORD,EARTHQUAKE_OBJ,PARAMETER_TYPE,UI_OBJ
 
 newPGA = []
 
@@ -58,12 +58,33 @@ def objective_function_exp(var):
     return [out,out,out]
             
 
-class PGA_OPTIMIZATION :
-    def __init__(self,stations):#,objFunction):
-        self.stations = stations
+class PGA_OPTIMIZATION(UI_OBJ) :
+
+    def __str__(self):
+        return 'PGA_OPTIMIZATION'
+
+    def __init__(self):#,objFunction):
+        super().__init__(# PARAMETER_TYPE(float,'signalFreq','signal frequency like 60.6(Hz)',1.0),
+                        #  PARAMETER_TYPE(float,'waveVelocity','wave velocity like 10.3(km/s)',1.0),
+                        #  PARAMETER_TYPE(float,'world_width','world_width like 32.2(km)',1.0),
+                        #  PARAMETER_TYPE(float,'width','grid width like 1(km)',0.01),
+                        #  PARAMETER_TYPE(int,'numStations','number of Stations like 10',10),
+                        #  PARAMETER_TYPE(float,'minC','minC 0.02',0.02),
+                        #  PARAMETER_TYPE(float,'maxC','maxC 0.02',0.1),
+                        #  PARAMETER_TYPE(float,'center_lat','latitude of center like : 10.0',10.0),
+                        #  PARAMETER_TYPE(float,'center_long','longitude of center like : -20.0',-20.0),
+                         # base signal
+                         )
         # self.objFunction = objFunction
 
-    def run(self):
+    def importParameters(self):
+        # self.signalFreq = self.getParameter(0)
+        # self.waveVelocity = self.getParameter(1)
+        pass
+
+    def run(self,stations):
+        self.stations = stations
+
         global newPGA
         
         x_ = x = 0

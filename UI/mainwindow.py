@@ -43,10 +43,13 @@ sys.path.append('./../')
 sys.path.append('.')
 
 from Data.gen_data.DataGeneration import DATA_GENERATOR
+from Algorithm.PgaOptimization import PGA_OPTIMIZATION
+from Algorithm.PgaOptimizationTorch import PGA_OPTIMIZOR_TORCH
 from PyQt5.QtWidgets import QMainWindow, QComboBox, QApplication, QCheckBox, QPushButton, QRadioButton, QWidget,QAction, QHBoxLayout, QTabWidget, QVBoxLayout, QLabel, QFormLayout, QLineEdit
 from Objects.objects import PARAMETER_TYPE,UI_OBJ
 
-dataCombo = [DATA_GENERATOR(),"hafez","shiraZ"]
+dataCombo = [DATA_GENERATOR()]
+algCombo = [PGA_OPTIMIZATION()]#, PGA_OPTIMIZOR_TORCH()]
 
 #%% MainWindow class
 class MainWindow(QTabWidget):
@@ -70,7 +73,7 @@ class MainWindow(QTabWidget):
         combo.addItem('select')
         for i in dataCombo:
             combo.addItem(str(i))
-        combo.currentIndexChanged.connect(self.DataComboChange)
+        combo.currentIndexChanged.connect(self.GiveComboChange('data'))
         self.dataLayout.addRow("select data source : ", combo)
         self.dataResText = QLabel("no config set")
         self.dataLayout.addRow(self.dataResText)
@@ -79,36 +82,81 @@ class MainWindow(QTabWidget):
         self.dataTab.setLayout(self.dataLayout)
     		
     def AlgorithmTabInit(self):
-        layout = QFormLayout()
-        sex = QHBoxLayout()
-        sex.addWidget(QRadioButton("Male"))
-        sex.addWidget(QRadioButton("Female"))
-        layout.addRow(QLabel("Sex"),sex)
-        layout.addRow("Date of Birth",QLineEdit())
-        self.setTabText(1,"Algorithm")
-        self.algTab.setLayout(layout)
-        		
+        self.algLayout = QFormLayout()
+        combo = QComboBox()
+        combo.addItem('select')
+        for i in algCombo:
+            combo.addItem(str(i))
+        combo.currentIndexChanged.connect(self.GiveComboChange('alg'))
+        self.algLayout.addRow("select Algorithm : ", combo)
+        self.algResText = QLabel("no config set")
+        self.algLayout.addRow(self.algResText)
+        
+        self.setTabText(0,"Algorithm")
+        self.algTab.setLayout(self.algLayout)
+
     def ResTabInit(self):
-        layout = QHBoxLayout()
-        layout.addWidget(QLabel("subjects"))
-        layout.addWidget(QCheckBox("Physics"))
-        layout.addWidget(QCheckBox("Maths"))
-        self.setTabText(2,"Result")
-        self.resTab.setLayout(layout)
-          
-    def DataComboChange(self,i):
-        if i!=0:
-            self.dataSelected = i-1
-            self.w = SecondWindow(dataCombo[self.dataSelected].parameters,self)
-            self.w.show()
-            self.hide()
+        self.resLayout = QFormLayout()
+        self.resBtn = QPushButton("Generate Results")
+        self.resLayout.addRow(self.resBtn)
+        self.resBtn.clicked.connect(self.resBtnClick)
+        self.resTab.setLayout(self.resLayout)
     
+    def resBtnClick(self):
+        dataset = dataCombo[self.dataSelected]
+        algorithm = algCombo[self.algSelected]
+
+        dataset.run()
+        print('dataset ran s')
+        signal = dataset.earthquake.signal
+        outTime ,outLat ,outLong, outC, outRec = algorithm.run(dataset.stations)
+        print('run successfully')
+        print(outTime ,outLat ,outLong, outC, outRec)
+        pass
+
+    def GiveComboChange(self,section): # section can be data or alg
+        print('function created ',section)
+        def comboChange(i):
+            counter = 0
+            if i!=0:
+                counter = i-1
+
+                if section == 'alg' :
+                    self.algSelected = counter
+                    combo = algCombo
+                    self.selectedResText = self.algResText
+                else :
+                    self.dataSelected = counter
+                    combo = dataCombo
+                    self.selectedResText = self.dataResText
+
+                self.selectedCombo = combo
+                self.selectedIdx = counter
+
+                try :
+                    if len(combo[counter].parameters)==0 or counter<0:
+                        self.cleanTheBox()
+                        return 
+                except:
+                    self.cleanTheBox()
+                    return 
+
+                self.w = SecondWindow(combo[counter].parameters,self)
+                self.w.show()
+                self.hide()
+        
+        return comboChange
+
+    
+    def cleanTheBox(self):
+        self.selectedResText.setText("no config set")
+
     def ReturnFromWindow(self):
         self.show()
         self.w.close()
-        printed = (dataCombo[self.dataSelected].__repr__())
-        print(printed)
-        self.dataResText.setText(printed)
+        printed = (self.selectedCombo[self.selectedIdx].__repr__())
+        # print(printed)
+        self.selectedResText.setText(printed)
         
 
 #%% Secondary Window
@@ -135,6 +183,7 @@ class SecondWindow(QWidget):
             text = inText.text()
             try:
                 param.setValue(text)
+                inText.setStyleSheet("""QLineEdit { background-color: white; color: black }""")
             except:
                 inText.setStyleSheet("""QLineEdit { background-color: red; color: black }""")
                 return
@@ -154,3 +203,12 @@ def main():
 	
 if __name__ == '__main__':
    main()
+
+
+#%% get file dialogue
+# from PyQt5.QtWidgets import QFileDialog
+#         options = QFileDialog.Options()
+#         options |= QFileDialog.DontUseNativeDialog
+#         fileName, _ = QFileDialog.getOpenFileName(self,"select file", "","All Files (*);;Python Files (*.py)", options=options)
+#         if fileName:
+#             print(fileName)
