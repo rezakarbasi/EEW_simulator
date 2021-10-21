@@ -6,7 +6,7 @@ sys.path.append('.')
 from Data.gen_data.DataGeneration import DATA_GENERATOR
 from Algorithm.PgaOptimization import PGA_OPTIMIZATION
 from Algorithm.PgaOptimizationTorch import PGA_OPTIMIZOR_TORCH
-from PyQt5.QtWidgets import QMainWindow, QComboBox, QApplication, QCheckBox, QPushButton, QRadioButton, QWidget,QAction, QHBoxLayout, QTabWidget, QVBoxLayout, QLabel, QFormLayout, QLineEdit
+from PyQt5.QtWidgets import QMainWindow, QComboBox, QApplication, QCheckBox, QPushButton, QRadioButton, QWidget,QAction, QHBoxLayout, QTabWidget, QVBoxLayout, QLabel, QFormLayout, QLineEdit, QMessageBox
 from Objects.objects import PARAMETER_TYPE,UI_OBJ
 
 dataCombo = [DATA_GENERATOR()]
@@ -129,6 +129,19 @@ def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath)
     anim.save(savePath + 'sim.mp4', writer=writer)
     fig.show()
 
+#%% open a message box
+def showdialog():
+   msg = QMessageBox()
+   msg.setIcon(QMessageBox.Warning)
+
+   msg.setText("you didn't enter all the parameters")
+   msg.setInformativeText("refer to algorithm and data section")
+   msg.setWindowTitle("Input Warning")
+#    msg.setDetailedText("The details are as follows:")
+   msg.setStandardButtons(QMessageBox.Ok)
+#    msg.buttonClicked.connect(msgbtn)
+	
+   retval = msg.exec_()
 
 #%% MainWindow class
 class MainWindow(QTabWidget):
@@ -145,6 +158,9 @@ class MainWindow(QTabWidget):
         self.AlgorithmTabInit()
         self.ResTabInit()
         self.setWindowTitle("earthquake simulator app")
+
+        self.dataSelected = None
+        self.algSelected = None
     		
     def DataTabInit(self):
         self.dataLayout = QFormLayout()
@@ -182,6 +198,9 @@ class MainWindow(QTabWidget):
         self.resTab.setLayout(self.resLayout)
     
     def resBtnClick(self):
+        if self.dataSelected==None or self.algSelected == None:
+            showdialog()
+            return 
         dataset = dataCombo[self.dataSelected]
         algorithm = algCombo[self.algSelected]
 
