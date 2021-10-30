@@ -18,7 +18,7 @@ def getLog(settings:list=[],tosave:list=[],name:list=[],saveTag=''):
 
     thisTime = datetime.datetime.now()
 
-    savePath = './result/' + saveTag + '--' + str(thisTime)[:-7]+'/'
+    savePath = './result/' + saveTag + '--' + str(thisTime)[:-7].replace('/','-')+'/'
     os.mkdir(savePath)
 
     settingStr = "settings : \ntime : "+str(thisTime)+"\nsave tag : "+saveTag+"\n\n"
@@ -192,6 +192,8 @@ class MainWindow(QTabWidget):
 
     def ResTabInit(self):
         self.resLayout = QFormLayout()
+        self.saveTag = QLineEdit()
+        self.resLayout.addRow("Saving Tag : ",self.saveTag)
         self.resBtn = QPushButton("Generate Results")
         self.resLayout.addRow(self.resBtn)
         self.resBtn.clicked.connect(self.resBtnClick)
@@ -209,7 +211,8 @@ class MainWindow(QTabWidget):
         signal = dataset.earthquake.signal
         outTime ,outLat ,outLong, outC, outRec = algorithm.run(dataset.stations)
         print('run successfully')
-        savePath = getLog(settings=[dataset,algorithm],saveTag='') # TODO : tag must be get from the user
+        print('save tag is : ',self.saveTag.text())
+        savePath = getLog(settings=[dataset,algorithm],saveTag=self.saveTag.text()) # TODO : tag must be get from the user
         PlotResults(dataset ,signal ,outTime ,outLat ,outLong, outC, outRec, savePath)
         # print(outTime ,outLat ,outLong, outC, outRec)
         pass
