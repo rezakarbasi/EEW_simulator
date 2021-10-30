@@ -18,7 +18,7 @@ def getLog(settings:list=[],tosave:list=[],name:list=[],saveTag=''):
 
     thisTime = datetime.datetime.now()
 
-    savePath = './result/' + saveTag + '--' + str(thisTime)[:-7].replace('/','-')+'/'
+    savePath = './result/' + saveTag + '--' + str(thisTime)[:-7]+'/'
     os.mkdir(savePath)
 
     settingStr = "settings : \ntime : "+str(thisTime)+"\nsave tag : "+saveTag+"\n\n"
