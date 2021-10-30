@@ -8,6 +8,7 @@ from Algorithm.PgaOptimization import PGA_OPTIMIZATION
 from Algorithm.PgaOptimizationTorch import PGA_OPTIMIZOR_TORCH
 from PyQt5.QtWidgets import QMainWindow, QComboBox, QApplication, QCheckBox, QPushButton, QRadioButton, QWidget,QAction, QHBoxLayout, QTabWidget, QVBoxLayout, QLabel, QFormLayout, QLineEdit, QMessageBox
 from Objects.objects import PARAMETER_TYPE,UI_OBJ
+from Functions import FindDist
 
 dataCombo = [DATA_GENERATOR()]
 algCombo = [PGA_OPTIMIZATION()]#, PGA_OPTIMIZOR_TORCH()]
@@ -39,7 +40,10 @@ def getLog(settings:list=[],tosave:list=[],name:list=[],saveTag=''):
 
 
 #%% plot the results
+# import matplotlib
+# matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 from matplotlib.animation import FuncAnimation
 from matplotlib import animation
 import numpy as np
@@ -55,11 +59,22 @@ def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath)
         stations.append((station.place.lat,station.place.long))
     stations = np.array(stations)
 
+    mean = np.mean(stations,axis=0)
+    maxx = np.max(stations,axis=0)
+
+    deltaLat = FindDist(mean[0],mean[1],20,'lat')
+    deltaLon = FindDist(mean[0],mean[1],20,'long')
+
     fig = plt.figure(figsize=(20, 10))
 
     #### map plot
     ax_map = fig.add_subplot(121)
-    ax_map.set_aspect('equal')
+    
+    # ax_map.set_aspect('equal')
+    ax_map.set_aspect(deltaLon/deltaLat)
+    ax_map.add_patch(patches.Rectangle((maxx[0]-0.12,maxx[1]-0.05), deltaLat,deltaLat/10,color="black"))
+    ax_map.text(maxx[0]-0.12+deltaLat/3,maxx[1]-0.05+deltaLat/10+0.03, '20KM', fontsize = 5)
+
     ax_map.set(xlim=(min(stations[:,0])-0.1, max(stations[:,0])+0.1), ylim=(min(stations[:,1]-0.1), max(stations[:,1])+0.1))
     scat = ax_map.scatter([0],[0],label='predicted')
     ax_map.scatter([dataset.earthquake.place.lat],[dataset.earthquake.place.long],s=500,marker='*',c='r',label='epicenter')
@@ -212,7 +227,7 @@ class MainWindow(QTabWidget):
         outTime ,outLat ,outLong, outC, outRec = algorithm.run(dataset.stations)
         print('run successfully')
         print('save tag is : ',self.saveTag.text())
-        savePath = getLog(settings=[dataset,algorithm],saveTag=self.saveTag.text()) # TODO : tag must be get from the user
+        savePath = getLog(settings=[dataset,algorithm],saveTag=self.saveTag.text())
         PlotResults(dataset ,signal ,outTime ,outLat ,outLong, outC, outRec, savePath)
         # print(outTime ,outLat ,outLong, outC, outRec)
         pass

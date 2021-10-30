@@ -19,7 +19,6 @@ def ObjFunction(var):
     else : # direction is longitude
         out = (geodesic((latitude+delta,longitude), (latitude,longitude)).kilometers - distance)**2
         out += (geodesic((latitude-delta,longitude), (latitude,longitude)).kilometers - distance)**2
-    print(out,delta)
     return out
 
 
