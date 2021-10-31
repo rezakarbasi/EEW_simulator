@@ -100,12 +100,12 @@ class PGA_OPTIMIZATION(UI_OBJ) :
             if end<station.time[-1]:
                 end=station.time[-1]
             
-            print(station)
+            # print(station)
         
         start -= datetime.timedelta(seconds=2)
         end += datetime.timedelta(seconds=10)
         
-        print(start,end)
+        # print(start,end)
 
         time = start
         oldPGA = []
@@ -121,28 +121,36 @@ class PGA_OPTIMIZATION(UI_OBJ) :
             time += datetime.timedelta(seconds=1)
             
             newPGA = []
+            mostPga = None
             for station in self.stations:
                 t,pga = station.GetPga(time)
                 # print(pga,end='\t')
                 if pga>0.001:
                     newPGA.append({'place':station.place,'pga':pga,'time':t})
+
+                    if mostPga==None:
+                        mostPga=newPGA[-1]
+                    elif mostPga['pga']<newPGA[-1]['pga']:
+                        mostPga=newPGA[-1]
             
             # print(newPGA)
             # print(len(newPGA))
             if newPGA!=oldPGA and len(newPGA)>3:
                 oldPGA = newPGA
                 newPGA = sorted(newPGA,key=lambda x:x['time'])
-                
-                if x == y == 0 or PLACES.distance(PLACES(x,y),PLACES(newPGA[0]['place'].lat,newPGA[0]['place'].long))>50:
-                    print('new reset')
+
+                if x == y == 0 or PLACES.distance(x,y,mostPga['place'].lat,mostPga['place'].long)>50:
                     ss=0
+                    x=0
+                    y=0
                     for pga in newPGA:
                         x += pga['place'].lat*pga['pga']
                         y += pga['place'].long*pga['pga']
                         ss += pga['pga']
-                    x/=ss
-                    y/=ss
-                    c=0.0001
+                    x /= ss
+                    y /= ss
+                    c = 0.0001
+                    print('new reset',x,y)
                 
                 x_ = y_ = c_ =0
                 
@@ -152,7 +160,8 @@ class PGA_OPTIMIZATION(UI_OBJ) :
                     c_ = c
                     # print(x,y,c)
                     x, y, c = fsolve(objective_function_exp, [x_, y_, c_])                
-            
+
+            x,y = PLACES.NormalizeLoc(x,y)
             outTime.append(time)
             outLat.append(x)
             outLong.append(y)

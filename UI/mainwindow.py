@@ -13,9 +13,10 @@ from Data.gen_data.DataGeneration import DATA_GENERATOR
 from Data.real_data.LoadData import LOAD_REAL_DATA
 from Algorithm.PgaOptimization import PGA_OPTIMIZATION
 from Algorithm.PgaOptimizationTorch import PGA_OPTIMIZOR_TORCH
-from PyQt5.QtWidgets import QMainWindow, QComboBox, QApplication, QCheckBox, QPushButton, QRadioButton, QWidget,QAction, QHBoxLayout, QTabWidget, QVBoxLayout, QLabel, QFormLayout, QLineEdit, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QComboBox, QApplication, QCheckBox, QPushButton, QRadioButton, QWidget,QAction, QHBoxLayout, QTabWidget, QVBoxLayout, QLabel, QFormLayout, QLineEdit, QMessageBox, QGridLayout
 from Objects.objects import PARAMETER_TYPE,UI_OBJ
 from Functions import FindDist
+from PyQt5.QtWidgets import QFileDialog
 
 dataCombo = [DATA_GENERATOR(),LOAD_REAL_DATA()]
 algCombo = [PGA_OPTIMIZATION(), PGA_OPTIMIZOR_TORCH()]
@@ -297,14 +298,34 @@ class SecondWindow(QWidget):
         self.pramameters = parametersToGet
         self.inputTexts = []
         for p in self.pramameters:
-            self.inputTexts.append(QLineEdit())
-            layout.addRow(p.name,self.inputTexts[-1])
-            self.inputTexts[-1].setPlaceholderText(p.help)
+            if p.openPathFinder:
+                self.inputTexts.append(QLineEdit())
+                self.inputTexts[-1].setPlaceholderText(p.help)
+
+                btn = QPushButton("...")
+                btn.clicked.connect(self.FillTheParamtersFunction(self.inputTexts[-1]))
+
+                localLayout = QGridLayout()
+                localLayout.addWidget(QLabel(p.name), 0, 0)
+                localLayout.addWidget(self.inputTexts[-1], 0, 1)
+                localLayout.addWidget(btn, 0, 2)
+
+                layout.addRow(localLayout)
+
+            else:
+                self.inputTexts.append(QLineEdit())
+                layout.addRow(p.name,self.inputTexts[-1])
+                self.inputTexts[-1].setPlaceholderText(p.help)
         
         btn = QPushButton("click")
         btn.clicked.connect(self.btnClick)
         layout.addRow(btn)
         self.setLayout(layout)
+
+    def FillTheParamtersFunction(self,lineEdit):
+        def function():
+            lineEdit.setText(str(QFileDialog.getExistingDirectory(self, "Select Directory")))
+        return function
     
     def btnClick(self):
         for param,inText in zip(self.pramameters,self.inputTexts):
@@ -331,12 +352,3 @@ def main():
 	
 if __name__ == '__main__':
    main()
-
-
-#%% get file dialogue
-# from PyQt5.QtWidgets import QFileDialog
-#         options = QFileDialog.Options()
-#         options |= QFileDialog.DontUseNativeDialog
-#         fileName, _ = QFileDialog.getOpenFileName(self,"select file", "","All Files (*);;Python Files (*.py)", options=options)
-#         if fileName:
-#             print(fileName)

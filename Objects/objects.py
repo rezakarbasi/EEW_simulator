@@ -1,3 +1,5 @@
+from typing import overload
+from matplotlib.colors import Normalize
 import numpy as np
 from geopy.distance import geodesic
 
@@ -38,16 +40,24 @@ class UI_OBJ:
         for p in self.parameters:
             out+='\n\t'+str(p)
         return out
-        
+
 
 class PLACES:
     def __init__(self,lat,long):
-        self.lat = lat#(lat%180)-90
-        self.long = long#(long%360)-180
+        self.lat,self.long = PLACES.NormalizeLoc(lat,long)
     
     @staticmethod
-    def distance(p1,p2):
-        return geodesic((p1.lat,p1.long), (p2.lat,p2.long)).kilometers
+    def distance(arg1,arg2,arg3=None,arg4=None):
+        if arg3 == None:
+            return geodesic((arg1.lat,arg1.long), (arg2.lat,arg2.long)).kilometers
+        elif arg4 == None:
+            return geodesic((arg1.lat,arg1.long), PLACES.NormalizeLoc(arg2,arg3)).kilometers
+
+        return geodesic(PLACES.NormalizeLoc(arg1,arg2), PLACES.NormalizeLoc(arg3,arg4)).kilometers
+
+    @staticmethod
+    def NormalizeLoc(lat,long):
+        return ((lat+90)%180-90,(long+180)%360-180)
     
     @staticmethod
     def random(domainLat,domainLon,aroundLat,aroundLon):
