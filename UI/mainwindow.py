@@ -1,5 +1,6 @@
 #%%
 import sys
+
 sys.path.append('./../')
 sys.path.append('.')
 
@@ -9,13 +10,14 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
 from Data.gen_data.DataGeneration import DATA_GENERATOR
+from Data.real_data.LoadData import LOAD_REAL_DATA
 from Algorithm.PgaOptimization import PGA_OPTIMIZATION
 from Algorithm.PgaOptimizationTorch import PGA_OPTIMIZOR_TORCH
 from PyQt5.QtWidgets import QMainWindow, QComboBox, QApplication, QCheckBox, QPushButton, QRadioButton, QWidget,QAction, QHBoxLayout, QTabWidget, QVBoxLayout, QLabel, QFormLayout, QLineEdit, QMessageBox
 from Objects.objects import PARAMETER_TYPE,UI_OBJ
 from Functions import FindDist
 
-dataCombo = [DATA_GENERATOR()]
+dataCombo = [DATA_GENERATOR(),LOAD_REAL_DATA()]
 algCombo = [PGA_OPTIMIZATION(), PGA_OPTIMIZOR_TORCH()]
 
 def getLog(settings:list=[],tosave:list=[],name:list=[],saveTag=''):

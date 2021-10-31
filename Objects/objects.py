@@ -2,11 +2,12 @@ import numpy as np
 from geopy.distance import geodesic
 
 class PARAMETER_TYPE:
-    def __init__(self,dataType,dataName:str,dataHelp:str,value=None):
+    def __init__(self,dataType,dataName:str,dataHelp:str,value=None,openPathFinder=False):
         self.type = dataType
         self.name = dataName
         self.help = dataHelp
         self.value = value
+        self.openPathFinder = openPathFinder
     
     def setValue(self,value):
         try :

@@ -5,7 +5,7 @@ import datetime
 
 import sys
 sys.path.append('./')
-from Objects.objects import PLACES,STATION_RECORD,EARTHQUAKE_OBJ
+from Objects.objects import PLACES,STATION_RECORD,EARTHQUAKE_OBJ,UI_OBJ,PARAMETER_TYPE
 
 
 basePath = './Data/real_data/'
@@ -31,15 +31,25 @@ def remove_bias(data):
     return data - (bins[idx]+bins[idx+1])/2
 
                 
-class LOAD_REAL_DATA:
-    def __init__(self,folderName):
+class LOAD_REAL_DATA(UI_OBJ):
+    def __str__(self):
+        return 'REAL_DATA'
+    
+    def __init__(self):
         
-        _,folders,_ = next(os.walk(basePath))
+        super().__init__(PARAMETER_TYPE(str,'path','path of the data file',
+        "/Users/rezakarbasi/PersonalFiles/Projects/1_DarCProj/MSE Project/Simulator App/EEW_simulator/Data/real_data/Japan/",
+        openPathFinder=True))
+
+    def importParameters(self):
+        self.path = self.getParameter(0)
+
+    def run(self):
+        self.importParameters()
         
-        if not(folderName in folders):
-            raise Exception('folder name is not in "{}" path'.format(basePath))
-            
-        dataPath = basePath+folderName+'/'
+        dataPath = self.path
+        if dataPath[-1]!='/':
+            dataPath += '/' 
 
         _,_,files = next(os.walk(dataPath))
         if len(files)==0:
