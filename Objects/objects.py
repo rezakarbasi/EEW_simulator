@@ -41,8 +41,8 @@ class UI_OBJ:
 
 class PLACES:
     def __init__(self,lat,long):
-        self.lat = lat
-        self.long = long
+        self.lat = lat#(lat%180)-90
+        self.long = long#(long%360)-180
     
     @staticmethod
     def distance(p1,p2):
@@ -92,10 +92,10 @@ class STATION_RECORD:
         if self.name != None:
             # print('\n print \n',self.name,self.place,self.GetStartTime(),self.GetPga(),self.sampleRate)
             return "STATION:{0} in {1} at {2} received a seismic wave . PGA {3:3.4f} and data sample rate was {4:3d}.".format(
-                self.name,self.place,self.GetStartTime(),self.GetPga(),self.sampleRate)
+                self.name,self.place,self.GetStartTime(),self.GetPga()[1],self.sampleRate)
 
         return "STATION in {0} at {1} received a seismic wave . PGA {2:3.4f} and data sample rate was {3:3d}.".format(
-            self.place,self.GetStartTime(),self.GetPga(),self.sampleRate)
+            self.place,self.GetStartTime(),self.GetPga()[1],self.sampleRate)
     
     def __repr__(self):
         return self.__str__()

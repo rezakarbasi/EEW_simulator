@@ -3,6 +3,11 @@ import sys
 sys.path.append('./../')
 sys.path.append('.')
 
+import numpy as np
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning)
+warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
+
 from Data.gen_data.DataGeneration import DATA_GENERATOR
 from Algorithm.PgaOptimization import PGA_OPTIMIZATION
 from Algorithm.PgaOptimizationTorch import PGA_OPTIMIZOR_TORCH
@@ -11,7 +16,7 @@ from Objects.objects import PARAMETER_TYPE,UI_OBJ
 from Functions import FindDist
 
 dataCombo = [DATA_GENERATOR()]
-algCombo = [PGA_OPTIMIZATION()]#, PGA_OPTIMIZOR_TORCH()]
+algCombo = [PGA_OPTIMIZATION(), PGA_OPTIMIZOR_TORCH()]
 
 def getLog(settings:list=[],tosave:list=[],name:list=[],saveTag=''):
     import datetime
@@ -46,7 +51,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.animation import FuncAnimation
 from matplotlib import animation
-import numpy as np
 
 SPEED = 10 # frame/s
 
@@ -58,6 +62,8 @@ def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath)
     for station in dataset.stations:
         stations.append((station.place.lat,station.place.long))
     stations = np.array(stations)
+
+    # print('stations : \n',stations)
 
     mean = np.mean(stations,axis=0)
     maxx = np.max(stations,axis=0)
@@ -72,6 +78,7 @@ def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath)
     
     # ax_map.set_aspect('equal')
     ax_map.set_aspect(deltaLon/deltaLat)
+    print(maxx,deltaLat)
     ax_map.add_patch(patches.Rectangle((maxx[0]-0.12,maxx[1]-0.05), deltaLat,deltaLat/10,color="black"))
     ax_map.text(maxx[0]-0.12+deltaLat/3,maxx[1]-0.05+deltaLat/10+0.03, '20KM', fontsize = 5)
 

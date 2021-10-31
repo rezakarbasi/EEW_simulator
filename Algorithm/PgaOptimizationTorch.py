@@ -1,4 +1,3 @@
-#%%
 import datetime
 import torch
 import torch.nn as nn
@@ -9,9 +8,9 @@ def Deg2Rad(deg):
     return deg*3.14/180
 
 class PGA_OPTIMIZOR_TORCH(nn.Module):
-    def __init__(self,stations):
+    def __init__(self):
         super(PGA_OPTIMIZOR_TORCH, self).__init__()
-        self.stations = stations
+        # self.stations = stations
         self.MakeVariables()
     
     def MakeVariables(self,lat=0.0,lon=0.0,c=0.001):
@@ -67,7 +66,9 @@ class PGA_OPTIMIZOR_TORCH(nn.Module):
         return loss
             
             
-    def run(self):
+    def run(self,stations):
+        self.stations = stations
+
         self.MakeVariables(0.0,0.0,0.0)
         x=y=c=0.0
         
@@ -79,6 +80,9 @@ class PGA_OPTIMIZOR_TORCH(nn.Module):
                 start>station.time[0]
             if end<station.time[-1]:
                 end=station.time[-1]
+
+        start -= datetime.timedelta(seconds=2)
+        end += datetime.timedelta(seconds=10)
         
         time = start
         oldPGA = []

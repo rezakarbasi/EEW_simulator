@@ -99,7 +99,14 @@ class PGA_OPTIMIZATION(UI_OBJ) :
                 start>station.time[0]
             if end<station.time[-1]:
                 end=station.time[-1]
+            
+            print(station)
         
+        start -= datetime.timedelta(seconds=2)
+        end += datetime.timedelta(seconds=10)
+        
+        print(start,end)
+
         time = start
         oldPGA = []
         
@@ -126,9 +133,15 @@ class PGA_OPTIMIZATION(UI_OBJ) :
                 oldPGA = newPGA
                 newPGA = sorted(newPGA,key=lambda x:x['time'])
                 
-                if x == y == 0:
-                    x = (newPGA[0]['place'].lat+newPGA[1]['place'].lat)/2
-                    y = (newPGA[0]['place'].long+newPGA[1]['place'].long)/2
+                if x == y == 0 or PLACES.distance(PLACES(x,y),PLACES(newPGA[0]['place'].lat,newPGA[0]['place'].long))>50:
+                    print('new reset')
+                    ss=0
+                    for pga in newPGA:
+                        x += pga['place'].lat*pga['pga']
+                        y += pga['place'].long*pga['pga']
+                        ss += pga['pga']
+                    x/=ss
+                    y/=ss
                     c=0.0001
                 
                 x_ = y_ = c_ =0
