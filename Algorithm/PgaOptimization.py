@@ -61,7 +61,7 @@ def objective_function_exp(var):
 class PGA_OPTIMIZATION(UI_OBJ) :
 
     def __str__(self):
-        return 'PGA_OPTIMIZATION'
+        return 'scikit optimizer'
 
     def __init__(self):#,objFunction):
         super().__init__(# PARAMETER_TYPE(float,'signalFreq','signal frequency like 60.6(Hz)',1.0),

@@ -33,7 +33,7 @@ def remove_bias(data):
                 
 class LOAD_REAL_DATA(UI_OBJ):
     def __str__(self):
-        return 'REAL_DATA'
+        return 'historical data'
     
     def __init__(self):
         

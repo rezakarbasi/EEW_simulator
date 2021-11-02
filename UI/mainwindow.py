@@ -99,8 +99,8 @@ def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath)
     # ax_map.set_aspect('equal')
     ax_map.set_aspect(deltaLon/deltaLat)
     print(maxx,deltaLat)
-    ax_map.add_patch(patches.Rectangle((maxx[0]-0.12,maxx[1]-0.05), deltaLat,deltaLat/10,color="black"))
-    ax_map.text(maxx[0]-0.12+deltaLat/3,maxx[1]-0.05+deltaLat/10+0.03, '20KM', fontsize = 5)
+    ax_map.add_patch(patches.Rectangle((maxx[0]-deltaLat-0.05,maxx[1]-0.05-deltaLat/10), deltaLat,deltaLat/10,color="black"))
+    ax_map.text(maxx[0]-deltaLat*2/3-0.05,maxx[1]-0.04, '20KM', fontsize = 8)
 
     ax_map.set(xlim=(min(stations[:,0])-0.1, max(stations[:,0])+0.1), ylim=(min(stations[:,1]-0.1), max(stations[:,1])+0.1))
     scat = ax_map.scatter([0],[0],label='predicted')
@@ -229,7 +229,7 @@ class MainWindow(QTabWidget):
         self.algResText = QLabel("no config set")
         self.algLayout.addRow(self.algResText)
         
-        self.setTabText(0,"Algorithm")
+        self.setTabText(1,"Algorithm")
         self.algTab.setLayout(self.algLayout)
 
     def ResTabInit(self):
