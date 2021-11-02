@@ -230,6 +230,7 @@ class MainWindow(QTabWidget):
             return 
         dataset = dataCombo[self.dataSelected]
         algorithm = algCombo[self.algSelected]
+        algorithm.reset()
 
         dataset.run()
         print('dataset ran s')

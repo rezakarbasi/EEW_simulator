@@ -11,7 +11,11 @@ class PGA_OPTIMIZOR_TORCH(nn.Module):
     def __init__(self):
         super(PGA_OPTIMIZOR_TORCH, self).__init__()
         # self.stations = stations
+        self.reset()
+    
+    def reset(self):
         self.MakeVariables()
+
     
     def MakeVariables(self,lat=0.0,lon=0.0,c=0.001):
         self.lat = torch.tensor([lat],requires_grad=True)

@@ -76,6 +76,10 @@ class PGA_OPTIMIZATION(UI_OBJ) :
                          # base signal
                          )
         # self.objFunction = objFunction
+        self.reset()
+
+    def reset(self):
+        pass
 
     def importParameters(self):
         # self.signalFreq = self.getParameter(0)
