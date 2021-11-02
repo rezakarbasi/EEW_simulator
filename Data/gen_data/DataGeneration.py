@@ -11,7 +11,7 @@ from Data.gen_data.GridWorldDataGenerator import GRIDWORLD_DATAGENERATOR
 class DATA_GENERATOR(UI_OBJ):
     # def __init__(self,center,numStations,world_width,signalFreq,waveVelocity,width,minC, maxC, baseSignal):
     def __str__(self):
-        return 'DATA_GENERATOR'
+        return 'data generator'
     
     def __init__(self):
         

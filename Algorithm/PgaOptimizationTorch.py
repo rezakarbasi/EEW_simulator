@@ -3,21 +3,30 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
+from Objects.objects import PLACES,STATION_RECORD,EARTHQUAKE_OBJ,PARAMETER_TYPE,UI_OBJ
 
 def Deg2Rad(deg):
     return deg*3.14/180
 
-class PGA_OPTIMIZOR_TORCH(nn.Module):
+class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
+    def __str__(self):
+        return 'torch optimizer'
+
     def __init__(self):
-        super(PGA_OPTIMIZOR_TORCH, self).__init__()
-        # self.stations = stations
+        super().__init__(
+            PARAMETER_TYPE(float,'learning rate','learning rate of the torch optimizer. like 0.001',0.001),
+            PARAMETER_TYPE(int,'iteration','how many repeats needed for each step? like 10',10)
+            )
         self.reset()
     
     def reset(self):
         self.MakeVariables()
 
     def GetConfigStr(self):
-        return "PGA optimization torch :\n\t uses torch library to optimize earthquake parameters based on the defined loss function."
+        out =  "PGA optimization torch :\n\t uses torch library to optimize earthquake parameters based on the defined loss function. the parameters :"
+        for param in self.parameters:
+            out += '\n\t\t{} : {}'.format(param.name,param.value)
+        return out
     
     def MakeVariables(self,lat=0.0,lon=0.0,c=0.001):
         self.lat = torch.tensor([lat],requires_grad=True)
@@ -71,8 +80,13 @@ class PGA_OPTIMIZOR_TORCH(nn.Module):
             loss-=10*self.c
         return loss
             
+    def importParameters(self):
+        self.learningRate = self.getParameter(0)
+        self.iterations = self.getParameter(1)
             
     def run(self,stations):
+        self.importParameters()
+
         self.stations = stations
 
         self.MakeVariables(0.0,0.0,0.0)
@@ -120,12 +134,12 @@ class PGA_OPTIMIZOR_TORCH(nn.Module):
                     self.MakeVariables(x,y,c)
                 
                 x_ = y_ = c_ =0
-                optimizer = torch.optim.Adam(self.GetParameters())
+                optimizer = torch.optim.Adam(self.GetParameters(),lr=self.learningRate)
                 matrix = self.MakeMatrix(newPGA)
                 
 
                 # while not(x == x_ and y == y_ and c == c_):
-                for _ in range(10):
+                for _ in range(self.iterations):
                     x_ = x
                     y_ = y
                     c_ = c
@@ -136,9 +150,7 @@ class PGA_OPTIMIZOR_TORCH(nn.Module):
                     optimizer.step()
                     
                     x,y,c = self.lat.item(),self.lon.item(),self.c.item()
-                
-                print(x,y,c)
-            
+                            
             outTime.append(time)
             outLat.append(x)
             outLong.append(y)
