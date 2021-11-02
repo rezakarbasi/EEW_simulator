@@ -77,6 +77,9 @@ class PGA_OPTIMIZATION(UI_OBJ) :
                          )
         # self.objFunction = objFunction
         self.reset()
+    
+    def GetConfigStr(self):
+        return "PGA optimization :\n\t uses scikit learn to optimize the location based on the defined loss function."
 
     def reset(self):
         pass

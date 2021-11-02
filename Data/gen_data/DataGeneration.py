@@ -26,7 +26,13 @@ class DATA_GENERATOR(UI_OBJ):
                          PARAMETER_TYPE(float,'center_long','longitude of center like : -20.0',-20.0),
                          # base signal
                          )
-    
+
+    def GetConfigStr(self):
+        out = "Data Generator :\n\t uses circle propagation to generate new earthquakes based on historical data. parameters : "
+        for param in self.parameters:
+            out += '\n\t\t{} : {}'.format(param.name,param.value)
+        return out
+
     def importParameters(self):
         self.signalFreq = self.getParameter(0)
         self.waveVelocity = self.getParameter(1)

@@ -16,6 +16,8 @@ class PGA_OPTIMIZOR_TORCH(nn.Module):
     def reset(self):
         self.MakeVariables()
 
+    def GetConfigStr(self):
+        return "PGA optimization torch :\n\t uses torch library to optimize earthquake parameters based on the defined loss function."
     
     def MakeVariables(self,lat=0.0,lon=0.0,c=0.001):
         self.lat = torch.tensor([lat],requires_grad=True)

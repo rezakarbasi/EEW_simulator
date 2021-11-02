@@ -41,6 +41,12 @@ class LOAD_REAL_DATA(UI_OBJ):
         "/Users/rezakarbasi/PersonalFiles/Projects/1_DarCProj/MSE Project/Simulator App/EEW_simulator/Data/real_data/Japan/",
         openPathFinder=True))
 
+    def GetConfigStr(self):
+        out = "Data Reader :\n\tThis data handler uses historical data to simulate our algorithm . It's parameters : "
+        for param in self.parameters:
+            out += '\n\t\t{} : {}'.format(param.name,param.value)
+        return out
+
     def importParameters(self):
         self.path = self.getParameter(0)
 

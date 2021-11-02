@@ -34,7 +34,7 @@ def getLog(settings:list=[],tosave:list=[],names:list=[],saveTag=''):
 
     settingStr = "settings : \ntime : "+str(thisTime)+"\nsave tag : "+saveTag+"\n\n"
     for s in settings:
-        settingStr+=str(s)+'\n'
+        settingStr+=s.GetConfigStr()+'\n\n'
 
     with open(savePath+'settings.txt', 'w') as f:
         f.write(settingStr)
