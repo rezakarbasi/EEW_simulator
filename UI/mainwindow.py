@@ -1,6 +1,8 @@
 #%%
 import sys
 
+from numpy.lib.npyio import save
+
 sys.path.append('./../')
 sys.path.append('.')
 
@@ -14,14 +16,14 @@ from Data.real_data.LoadData import LOAD_REAL_DATA
 from Algorithm.PgaOptimization import PGA_OPTIMIZATION
 from Algorithm.PgaOptimizationTorch import PGA_OPTIMIZOR_TORCH
 from PyQt5.QtWidgets import QMainWindow, QComboBox, QApplication, QCheckBox, QPushButton, QRadioButton, QWidget,QAction, QHBoxLayout, QTabWidget, QVBoxLayout, QLabel, QFormLayout, QLineEdit, QMessageBox, QGridLayout
-from Objects.objects import PARAMETER_TYPE,UI_OBJ
+from Objects.objects import PARAMETER_TYPE, PLACES,UI_OBJ
 from Functions import FindDist
 from PyQt5.QtWidgets import QFileDialog
 
 dataCombo = [DATA_GENERATOR(),LOAD_REAL_DATA()]
 algCombo = [PGA_OPTIMIZATION(), PGA_OPTIMIZOR_TORCH()]
 
-def getLog(settings:list=[],tosave:list=[],name:list=[],saveTag=''):
+def getLog(settings:list=[],tosave:list=[],names:list=[],saveTag=''):
     import datetime
     import os
 
@@ -37,7 +39,7 @@ def getLog(settings:list=[],tosave:list=[],name:list=[],saveTag=''):
     with open(savePath+'settings.txt', 'w') as f:
         f.write(settingStr)
     
-    for file,name in zip(tosave,name):
+    for file,name in zip(tosave,names):
         if type(name)!=str:
             raise Exception("names must be str !!")
         
@@ -56,6 +58,21 @@ from matplotlib.animation import FuncAnimation
 from matplotlib import animation
 
 SPEED = 10 # frame/s
+
+def PlotError(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath):
+    err = []
+    for lat,long in zip(outLat,outLong):
+        err.append(PLACES.distance(dataset.Give_Center(),lat,long))
+    plt.close()
+    plt.figure()
+    plt.plot(outTime,err)
+    plt.yscale('log')
+    plt.ylim([0.1,60])
+    plt.title('error in steps (km)')
+    plt.xlabel('running steps')
+    plt.ylabel('error in result')
+    plt.savefig(savePath+'error.png')
+    plt.close()
 
 def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath):
     Writer = animation.writers['ffmpeg']
@@ -240,6 +257,7 @@ class MainWindow(QTabWidget):
         print('save tag is : ',self.saveTag.text())
         savePath = getLog(settings=[dataset,algorithm],saveTag=self.saveTag.text())
         PlotResults(dataset ,signal ,outTime ,outLat ,outLong, outC, outRec, savePath)
+        PlotError(dataset ,signal ,outTime ,outLat ,outLong, outC, outRec, savePath)
         # print(outTime ,outLat ,outLong, outC, outRec)
         pass
 
