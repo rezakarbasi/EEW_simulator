@@ -212,6 +212,11 @@ class MainWindow(QTabWidget):
             combo.addItem(str(i))
         combo.currentIndexChanged.connect(self.GiveComboChange('data'))
         self.dataLayout.addRow("select data source : ", combo)
+
+        btn = QPushButton("Reset Parameters")
+        btn.clicked.connect(self.GiveResetBtnClick('data'))
+        self.dataLayout.addRow(btn)
+
         self.dataResText = QLabel("no config set")
         self.dataLayout.addRow(self.dataResText)
         
@@ -226,6 +231,11 @@ class MainWindow(QTabWidget):
             combo.addItem(str(i))
         combo.currentIndexChanged.connect(self.GiveComboChange('alg'))
         self.algLayout.addRow("select Algorithm : ", combo)
+
+        btn = QPushButton("Reset Parameters")
+        btn.clicked.connect(self.GiveResetBtnClick('alg'))
+        self.algLayout.addRow(btn)
+
         self.algResText = QLabel("no config set")
         self.algLayout.addRow(self.algResText)
         
@@ -261,8 +271,37 @@ class MainWindow(QTabWidget):
         # print(outTime ,outLat ,outLong, outC, outRec)
         pass
 
+    def GiveResetBtnClick(self,section):
+        # print('reset function created ',section)
+        def resetClick():
+            if section == 'alg' :
+                idx = self.algSelected
+                combo = algCombo
+                self.selectedResText = self.algResText
+            else :
+                idx = self.dataSelected
+                combo = dataCombo
+                self.selectedResText = self.dataResText
+
+            self.selectedCombo = combo
+            self.selectedIdx = idx
+
+            try :
+                if len(combo[idx].parameters)==0 or idx<0:
+                    self.cleanTheBox()
+                    return 
+            except:
+                self.cleanTheBox()
+                return 
+
+            self.w = SecondWindow(combo[idx].parameters,self)
+            self.w.show()
+            self.hide()
+        
+        return resetClick
+
     def GiveComboChange(self,section): # section can be data or alg
-        print('function created ',section)
+        # print('function created ',section)
         def comboChange(i):
             counter = 0
             if i!=0:
@@ -297,7 +336,6 @@ class MainWindow(QTabWidget):
     
     def cleanTheBox(self):
         self.selectedResText.setText("no config set")
-        print('function called')
 
     def ReturnFromWindow(self):
         self.show()
