@@ -5,6 +5,7 @@ import datetime
 import sys
 sys.path.append('./')
 from Objects.objects import PLACES,STATION_RECORD,EARTHQUAKE_OBJ,PARAMETER_TYPE,UI_OBJ
+from Functions import get_data,remove_bias
 
 from Data.gen_data.GridWorldDataGenerator import GRIDWORLD_DATAGENERATOR
 
@@ -15,16 +16,18 @@ class DATA_GENERATOR(UI_OBJ):
     
     def __init__(self):
         
-        super().__init__(PARAMETER_TYPE(float,'signalFreq','signal frequency like 60.6(Hz)',1.0),
-                         PARAMETER_TYPE(float,'waveVelocity','wave velocity like 10.3(km/s)',1.0),
-                         PARAMETER_TYPE(float,'world_width','world_width like 32.2(km)',1.0),
-                         PARAMETER_TYPE(float,'width','grid width like 1(km)',0.01),
-                         PARAMETER_TYPE(int,'numStations','number of Stations like 10',10),
-                         PARAMETER_TYPE(float,'minC','minC 0.02',0.02),
-                         PARAMETER_TYPE(float,'maxC','maxC 0.02',0.1),
-                         PARAMETER_TYPE(float,'center_lat','latitude of center like : 10.0',10.0),
-                         PARAMETER_TYPE(float,'center_long','longitude of center like : -20.0',-20.0),
-                         # base signal
+        super().__init__(
+                         PARAMETER_TYPE(float,'wave velocity','wave velocity like 0.3(km/s)',0.4),
+                         PARAMETER_TYPE(float,'world width','world_width like 0.5 degree',0.6),
+                         PARAMETER_TYPE(float,'width','grid width like 0.02 degree',0.04),
+                         PARAMETER_TYPE(int,'number of stations','number of Stations like 10',15),
+                         PARAMETER_TYPE(float,'min C','minC 0.02',0.05),
+                         PARAMETER_TYPE(float,'max C','maxC 0.1',0.2),
+                         PARAMETER_TYPE(float,'center lat','latitude of center like : 10.0',10.0),
+                         PARAMETER_TYPE(float,'center long','longitude of center like : -20.0',-20.0),
+                         PARAMETER_TYPE(str,'base signal path',"Enter path of the base signal",
+                         "/Users/rezakarbasi/PersonalFiles/Projects/1_DarCProj/MSE Project/drop-coefficient-simulation/Japan/ex_20210919171900/TYM0122109191719.NS",
+                         openFileFinder=True)
                          )
 
     def GetConfigStr(self):
@@ -34,22 +37,29 @@ class DATA_GENERATOR(UI_OBJ):
         return out
 
     def importParameters(self):
-        self.signalFreq = self.getParameter(0)
-        self.waveVelocity = self.getParameter(1)
-        self.world_width = self.getParameter(2)
-        self.width = self.getParameter(3)
-        self.numStations = self.getParameter(4)
-        self.minC = self.getParameter(5)
-        self.maxC = self.getParameter(6)
-        self.center_lat = self.getParameter(7)
-        self.center_long = self.getParameter(8)
+        self.waveVelocity = self.getParameter(0)
+        self.world_width = self.getParameter(1)
+        self.width = self.getParameter(2)
+        self.numStations = self.getParameter(3)
+        self.minC = self.getParameter(4)
+        self.maxC = self.getParameter(5)
+        self.center_lat = self.getParameter(6)
+        self.center_long = self.getParameter(7)
 
         self.center=PLACES(self.center_lat,self.center_long)
+
+        path = self.getParameter(8)
         
-        baseSignal = np.ones(10)
-        baseSignal[0] = 0
-        baseSignal*=1.0
-        self.baseSignal = baseSignal
+        if ('NS' in path) or ('EW' in path) or ('UD' in path):
+            baseSignal,_,stream = get_data(path)
+            self.signalFreq = stream.stats.sampling_rate
+
+        self.baseSignal = remove_bias(baseSignal)
+
+        # baseSignal = np.ones(10)
+        # baseSignal[0] = 0
+        # baseSignal*=1.0
+        # self.baseSignal = baseSignal
 
         
     def run(self):

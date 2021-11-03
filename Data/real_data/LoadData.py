@@ -1,7 +1,7 @@
-from obspy import read
 import numpy as np
 import os 
 import datetime
+from Functions import get_data,remove_bias
 
 import sys
 sys.path.append('./')
@@ -10,26 +10,6 @@ from Objects.objects import PLACES,STATION_RECORD,EARTHQUAKE_OBJ,UI_OBJ,PARAMETE
 
 basePath = './Data/real_data/'
 
-def get_data(path):
-    stream = read(path)[0]
-        
-    freq = stream.stats.sampling_rate
-    data = stream.data
-    time = [stream.stats.starttime+i/freq for i in range(len(data))]
-    
-    return data,time,stream
-
-def function_hist(a, binNum):
-    ini, final = np.min(a),np.max(a)
-    bins = np.linspace(ini, final, binNum+1)
-    hist = np.histogram(np.array(a), bins)
-    return hist
-
-def remove_bias(data):
-    val,bins = function_hist(data,2000)
-    idx = np.argmax(val)
-    return data - (bins[idx]+bins[idx+1])/2
-
                 
 class LOAD_REAL_DATA(UI_OBJ):
     def __str__(self):
@@ -37,7 +17,7 @@ class LOAD_REAL_DATA(UI_OBJ):
     
     def __init__(self):
         
-        super().__init__(PARAMETER_TYPE(str,'path','path of the data file',
+        super().__init__(PARAMETER_TYPE(str,'path','path of the data files',
         "/Users/rezakarbasi/PersonalFiles/Projects/1_DarCProj/MSE Project/Simulator App/EEW_simulator/Data/real_data/Japan/",
         openPathFinder=True))
 

@@ -4,12 +4,13 @@ import numpy as np
 from geopy.distance import geodesic
 
 class PARAMETER_TYPE:
-    def __init__(self,dataType,dataName:str,dataHelp:str,value=None,openPathFinder=False):
+    def __init__(self,dataType,dataName:str,dataHelp:str,value=None,openPathFinder=False,openFileFinder=False):
         self.type = dataType
         self.name = dataName
         self.help = dataHelp
         self.value = value
         self.openPathFinder = openPathFinder
+        self.openFileFinder = openFileFinder
     
     def setValue(self,value):
         try :

@@ -360,7 +360,21 @@ class SecondWindow(QWidget):
                 self.inputTexts[-1].setPlaceholderText(p.help)
 
                 btn = QPushButton("...")
-                btn.clicked.connect(self.FillTheParamtersFunction(self.inputTexts[-1]))
+                btn.clicked.connect(self.FillTheParamtersFunction(self.inputTexts[-1],'Directory'))
+
+                localLayout = QGridLayout()
+                localLayout.addWidget(QLabel(p.name), 0, 0)
+                localLayout.addWidget(self.inputTexts[-1], 0, 1)
+                localLayout.addWidget(btn, 0, 2)
+
+                layout.addRow(localLayout)
+
+            elif p.openFileFinder:
+                self.inputTexts.append(QLineEdit())
+                self.inputTexts[-1].setPlaceholderText(p.help)
+
+                btn = QPushButton("...")
+                btn.clicked.connect(self.FillTheParamtersFunction(self.inputTexts[-1],'File'))
 
                 localLayout = QGridLayout()
                 localLayout.addWidget(QLabel(p.name), 0, 0)
@@ -379,9 +393,14 @@ class SecondWindow(QWidget):
         layout.addRow(btn)
         self.setLayout(layout)
 
-    def FillTheParamtersFunction(self,lineEdit):
+    def FillTheParamtersFunction(self,lineEdit,whatToGet='Dir'):
         def function():
-            lineEdit.setText(str(QFileDialog.getExistingDirectory(self, "Select Directory")))
+            if 'dir' in whatToGet.lower():
+                lineEdit.setText(str(QFileDialog.getExistingDirectory(self, "Select Directory")))
+            else :
+                a=QFileDialog.getOpenFileName()[0]
+                lineEdit.setText(str(a))
+                print(a)
         return function
     
     def btnClick(self):
