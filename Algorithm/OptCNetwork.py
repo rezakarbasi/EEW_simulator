@@ -8,14 +8,17 @@ from Objects.objects import PLACES,STATION_RECORD,EARTHQUAKE_OBJ,PARAMETER_TYPE,
 def Deg2Rad(deg):
     return deg*3.14/180
 
-class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
+class OPT_C_NETWORK(UI_OBJ):
     def __str__(self):
-        return 'torch optimizer'
+        return 'optimize with c network'
 
     def __init__(self):
         super().__init__(
             PARAMETER_TYPE(float,'learning rate','learning rate of the torch optimizer. like 0.001',0.001),
-            PARAMETER_TYPE(int,'iteration','how many repeats needed for each step? like 10',10)
+            PARAMETER_TYPE(int,'iteration','how many repeats needed for each step? like 10',10),
+            PARAMETER_TYPE(str,'model path',"Enter path of learnt model",
+            "/Users/rezakarbasi/PersonalFiles/Projects/1_DarCProj/MSE Project/drop-coefficient-simulation/model-third.torch",
+            openFileFinder=True)
             )
         self.reset()
     
@@ -74,8 +77,11 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
                 d1 = self.GetDistance(self.lat, self.lon, lat1, lon1)
                 d2 = self.GetDistance(self.lat, self.lon, lat2, lon2)
             
-                o = torch.log(pga1/pga2) + self.c*(d1-d2)
-                loss += torch.abs(o)*torch.min(pga1,pga2)
+                # o = torch.log(pga1/pga2) + self.c*(d1-d2)
+                if pga1/pga2<1e-3:
+                    continue
+                o = (torch.log(pga1/pga2)-c1*torch.log(d1)+c2*torch.log(d2))**2
+                loss += o*torch.min(pga1,pga2)
         if self.c<0:
             loss-=10*self.c
         return loss
@@ -83,6 +89,7 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
     def importParameters(self):
         self.learningRate = self.getParameter(0)
         self.iterations = self.getParameter(1)
+        self.modelPath = self.getParameter(2)
             
     def run(self,stations):
         self.importParameters()
