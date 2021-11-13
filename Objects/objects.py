@@ -3,6 +3,10 @@ from matplotlib.colors import Normalize
 import numpy as np
 from geopy.distance import geodesic
 
+def convolve_time_ave(data,length:int):
+    kernel = np.ones(length)/length
+    return np.convolve(data,kernel)[:len(data)]
+
 class PARAMETER_TYPE:
     def __init__(self,dataType,dataName:str,dataHelp:str,value=None,openPathFinder=False,openFileFinder=False):
         self.type = dataType
@@ -74,7 +78,7 @@ class PLACES:
         return self.__str__()
 
 class STATION_RECORD:
-    def __init__(self,place,sampleRate,time,name=None,dataNS=None,dataEW=None,dataUD=None,data=None):
+    def __init__(self,place,sampleRate,time,name=None,dataNS=None,dataEW=None,dataUD=None,data=None,staPeriod=None,ltaPeriod=None):
         self.name = name
         self.place = place
         self.sampleRate = int(sampleRate)
@@ -83,7 +87,33 @@ class STATION_RECORD:
         self.dataEW = dataEW
         self.dataUD = dataUD
         self.time = time
+        
+        self.staPeriod,self.ltaPeriod = None,None
+        self.SetStaLta(staPeriod,ltaPeriod)
+
+    def SetStaLta(self,staPeriod=None,ltaPeriod=None):
+        if staPeriod!=None and ltaPeriod!=None:
+            self.staPeriod,self.ltaPeriod = staPeriod,ltaPeriod
+        
+        if self.staPeriod!=None and self.ltaPeriod!=None:
+            self.sta = convolve_time_ave(self.data,self.staPeriod)
+            self.lta = convolve_time_ave(self.data,self.ltaPeriod)
+
+            self.ratio = self.sta/(self.lta+1e-10)
+
+            return True
+        
+        return False
     
+    def GetTrigged(self,time,thresh=2):
+        idx = np.where(self.time <= time)[0]
+        if len(idx)>0:
+            idx=idx[-1]
+            if self.ratio[idx]>=thresh:
+                return True
+
+        return False
+
     def GetPga(self,toTime=None):
         d = self.data
         if toTime!=None:
