@@ -2,10 +2,13 @@ from typing import overload
 from matplotlib.colors import Normalize
 import numpy as np
 from geopy.distance import geodesic
+import datetime
 
 def convolve_time_ave(data,length:int):
+    d = np.append(np.ones(1000)*data[0],data)
     kernel = np.ones(length)/length
-    return np.convolve(data,kernel)[:len(data)]
+    d = np.convolve(d,kernel)[:len(d)]
+    return d[1000:]
 
 class PARAMETER_TYPE:
     def __init__(self,dataType,dataName:str,dataHelp:str,value=None,openPathFinder=False,openFileFinder=False):
@@ -91,26 +94,32 @@ class STATION_RECORD:
         self.staPeriod,self.ltaPeriod = None,None
         self.SetStaLta(staPeriod,ltaPeriod)
 
-    def SetStaLta(self,staPeriod=None,ltaPeriod=None):
+    def SetStaLta(self,staPeriod=None,ltaPeriod=None,thresh=2):
         if staPeriod!=None and ltaPeriod!=None:
             self.staPeriod,self.ltaPeriod = staPeriod,ltaPeriod
         
         if self.staPeriod!=None and self.ltaPeriod!=None:
-            self.sta = convolve_time_ave(self.data,self.staPeriod)
-            self.lta = convolve_time_ave(self.data,self.ltaPeriod)
+            self.sta = convolve_time_ave(self.data,self.staPeriod*self.sampleRate)
+            self.lta = convolve_time_ave(self.data,self.ltaPeriod*self.sampleRate)
 
             self.ratio = self.sta/(self.lta+1e-10)
+
+            self.passThreshMask = self.ratio>thresh
 
             return True
         
         return False
     
-    def GetTrigged(self,time,thresh=2):
-        idx = np.where(self.time <= time)[0]
-        if len(idx)>0:
-            idx=idx[-1]
-            if self.ratio[idx]>=thresh:
-                return True
+    def GetTrigged(self,toTime,fromTime=None):
+        if fromTime == None:
+            fromTime = toTime-datetime.timedelta(milliseconds=50)
+        
+        passedTimes = self.time[self.passThreshMask]
+        out = passedTimes[passedTimes <= toTime]
+        out = out[out >= fromTime]
+
+        if len(out)>0:
+            return out[0]
 
         return False
 
