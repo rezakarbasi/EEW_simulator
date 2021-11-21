@@ -16,13 +16,14 @@ from Data.gen_data.StepGenerator import STEP_GENERATOR
 from Data.real_data.LoadData import LOAD_REAL_DATA
 from Algorithm.PgaOptimization import PGA_OPTIMIZATION
 from Algorithm.PgaOptimizationTorch import PGA_OPTIMIZOR_TORCH
+from Algorithm.StaLtaLoc import STA_LTA_LOCATION
 from PyQt5.QtWidgets import QMainWindow, QComboBox, QApplication, QCheckBox, QPushButton, QRadioButton, QWidget,QAction, QHBoxLayout, QTabWidget, QVBoxLayout, QLabel, QFormLayout, QLineEdit, QMessageBox, QGridLayout
 from Objects.objects import PARAMETER_TYPE, PLACES,UI_OBJ
 from Functions import FindDist
 from PyQt5.QtWidgets import QFileDialog
 
 dataCombo = [STEP_GENERATOR(),DATA_GENERATOR(),LOAD_REAL_DATA()]
-algCombo = [PGA_OPTIMIZATION(), PGA_OPTIMIZOR_TORCH()]
+algCombo = [PGA_OPTIMIZATION(), PGA_OPTIMIZOR_TORCH(),STA_LTA_LOCATION()]
 
 def getLog(settings:list=[],tosave:list=[],names:list=[],saveTag=''):
     import datetime
@@ -63,6 +64,10 @@ SPEED = 10 # frame/s
 def PlotError(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath):
     err = []
     for lat,long in zip(outLat,outLong):
+        if lat==None:
+            lat=0
+        if long==None:
+            long=0
         err.append(PLACES.distance(dataset.Give_Center(),lat,long))
     plt.close()
     plt.figure()

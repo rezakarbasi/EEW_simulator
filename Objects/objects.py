@@ -99,8 +99,8 @@ class STATION_RECORD:
             self.staPeriod,self.ltaPeriod = staPeriod,ltaPeriod
         
         if self.staPeriod!=None and self.ltaPeriod!=None:
-            self.sta = convolve_time_ave(self.data,self.staPeriod*self.sampleRate)
-            self.lta = convolve_time_ave(self.data,self.ltaPeriod*self.sampleRate)
+            self.sta = convolve_time_ave(self.data,int(self.staPeriod*self.sampleRate))
+            self.lta = convolve_time_ave(self.data,int(self.ltaPeriod*self.sampleRate))
 
             self.ratio = self.sta/(self.lta+1e-10)
 
