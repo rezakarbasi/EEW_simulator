@@ -180,7 +180,13 @@ class DATA_GENERATOR_FROM_FILE(UI_OBJ):
                 data=(ew**2+ns**2+ud**2)**0.5))
         self.stations = stations
 
-        signal={'absolute':(self.ewSignal**2 + self.nsSignal**2 + self.udSignal**2)**0.5,'ns':self.nsSignal,'ew':self.ewSignal,'ud':self.udSignal}
+        # signal={'absolute':(self.ewSignal**2 + self.nsSignal**2 + self.udSignal**2)**0.5,'ns':self.nsSignal,'ew':self.ewSignal,'ud':self.udSignal}
+        signal={
+            'NS':self.nsSignal,
+            'EW':self.ewSignal,
+            'UD':self.udSignal,
+            'time':[earthquake_time+i*interval for i in range(len(self.nsSignal))]
+            }
         self.earthquake = EARTHQUAKE_OBJ(PLACES(self.info['latitude'],self.info['longitude']),data=signal ,mag=self.info['magnitude'],depth=self.info['depth'])
     
     def Give_Center(self):

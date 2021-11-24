@@ -48,7 +48,7 @@ class STEP_GENERATOR(UI_OBJ):
         
         baseSignal = np.ones(10)
         baseSignal[0] = 0
-        baseSignal*=1.0
+        baseSignal*=30.0
         self.baseSignal = baseSignal
 
         
@@ -79,34 +79,36 @@ class STEP_GENERATOR(UI_OBJ):
         
         self.stations = stations
 
-        # make earthquake base signal
-        st = datetime.datetime(2050, 12, 30, 23, 59, 59)
-        en = datetime.datetime(1990, 1, 1, 1, 1, 1)
-        signal = None
-        savedMax = 0
-        for station in stations:
-            maxx = max(station.data)
-            if station.time[0]<st or (station.time[0]==st and (savedMax<maxx)):
-                savedMax  = maxx
-                st = station.time[0]
+        signal = {'absolute':self.baseSignal,'time':[earthquake_time+i*interval for i in range(len(self.baseSignal))]}
+
+        # # make earthquake base signal
+        # st = datetime.datetime(2050, 12, 30, 23, 59, 59)
+        # en = datetime.datetime(1990, 1, 1, 1, 1, 1)
+        # signal = None
+        # savedMax = 0
+        # for station in stations:
+        #     maxx = max(station.data)
+        #     if station.time[0]<st or (station.time[0]==st and (savedMax<maxx)):
+        #         savedMax  = maxx
+        #         st = station.time[0]
                 
-                time = station.time
+        #         time = station.time
                 
-                absolute = station.data
+        #         absolute = station.data
             
-            if station.time[-1]>en:
-                en = station.time[-1]
+        #     if station.time[-1]>en:
+        #         en = station.time[-1]
         
-        signal = {'absolute':[]}
-        t = st
-        while t<en:
-            if t<time[-1]:
-                idxs = time<=t
+        # signal = {'absolute':[]}
+        # t = st
+        # while t<en:
+        #     if t<time[-1]:
+        #         idxs = time<=t
                 
-                signal['absolute'].append(absolute[idxs][-1])
-            else:
-                signal['absolute'].append(0)
-            t+=datetime.timedelta(seconds=1)
+        #         signal['absolute'].append(absolute[idxs][-1])
+        #     else:
+        #         signal['absolute'].append(0)
+        #     t+=datetime.timedelta(seconds=1)
 
         self.earthquake = EARTHQUAKE_OBJ(self.center,data=signal ,mag=None)
     

@@ -83,6 +83,8 @@ class FIND_LOCATION(nn.Module):
                 deltaD2 = GetDistance(loc2,(self.lat,self.lon))
 
                 deltaT = (time2-time1)
+                if type(time2-time1)!=float:
+                    deltaT = deltaT.total_seconds()
                 deltaD = (deltaD2-deltaD1)
 
                 loss += (deltaD-self.v*deltaT)**2

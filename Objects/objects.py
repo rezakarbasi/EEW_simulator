@@ -90,6 +90,9 @@ class STATION_RECORD:
         self.dataEW = dataEW
         self.dataUD = dataUD
         self.time = time
+
+        if type(self.data) == type(None) :
+            self.data = (self.dataNS**2+self.dataEW**2+self.dataUD**2)**0.5
         
         self.staPeriod,self.ltaPeriod = None,None
         self.SetStaLta(staPeriod,ltaPeriod)

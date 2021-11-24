@@ -1,5 +1,6 @@
 #%%
 import sys
+from PyQt5.QtCore import QLine
 
 from numpy.lib.npyio import save
 
@@ -53,8 +54,9 @@ def getLog(settings:list=[],tosave:list=[],names:list=[],saveTag=''):
 
 
 #%% plot the results
-# import matplotlib
+import matplotlib
 # matplotlib.use("TkAgg")
+matplotlib.use("Qt5Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.animation import FuncAnimation
@@ -83,7 +85,7 @@ def PlotError(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath):
 
 def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath):
     Writer = animation.writers['ffmpeg']
-    writer = Writer(fps=SPEED, metadata=dict(artist='Me'), bitrate=1800)
+    writer = Writer(fps=SPEED, metadata=dict(artist='Me'), bitrate=1800*SPEED)
 
     stations = []
     for station in dataset.stations:
@@ -123,6 +125,8 @@ def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath)
     #### signal plots
     signalLines = []
     for i,key in enumerate(signal):
+        if key == "time":
+            continue
         i += 1
         sig = signal[key]
         ax = fig.add_subplot(len(signal),2,i*2)
@@ -134,6 +138,10 @@ def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath)
             ax.xaxis.set_visible(False)
         ax.set_title(key)
         signalLines.append(ax.plot([], [], color='b', lw=1, alpha=0.5)[0])
+
+    signalTime = signal['time']
+    middlePoint = int(len(signalTime)/2)
+    ax.set_xticks([0,middlePoint,len(signalTime)-1],[signalTime[0],signalTime[middlePoint],signalTime[-1]])
     #### END signal plots
 
 
@@ -163,18 +171,24 @@ def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath)
         #### END map plot
         
         #### signal plots
+        signalContentList = list(signal)
+        signalContentList.remove('time')
+        signalTime = np.array(signal['time'])
+        signalTime = signalTime[signalTime<=outTime[i]]
+        showLen = len(signalTime)
         for idx,signalLine in enumerate(signalLines):
-            key = list(signal)[idx]
+            key = signalContentList[idx]
             sig = signal[key]
-            if len(sig)>i:
-                signalLine.set_ydata(sig[:i])
-                signalLine.set_xdata(range(i))
+            # if len(sig)>i:
+            signalLine.set_ydata(sig[:showLen])
+            signalLine.set_xdata(range(showLen))
         #### END signal plots
     
     global textsIn
     textsIn = []
 
     anim = FuncAnimation(fig, animate, interval=int(1050/SPEED), frames=len(outTime))
+    print(1050/SPEED)
     anim.save(savePath + 'sim.mp4', writer=writer)
     fig.show()
 
@@ -253,6 +267,8 @@ class MainWindow(QTabWidget):
         self.resLayout = QFormLayout()
         self.saveTag = QLineEdit()
         self.resLayout.addRow("Saving Tag : ",self.saveTag)
+        self.frameText = QLineEdit()
+        self.resLayout.addRow("Frame Rate : ",self.frameText)
         self.resBtn = QPushButton("Generate Results")
         self.resLayout.addRow(self.resBtn)
         self.resBtn.clicked.connect(self.resBtnClick)
@@ -262,6 +278,10 @@ class MainWindow(QTabWidget):
         if self.dataSelected==None or self.algSelected == None:
             showdialog()
             return 
+        if self.frameText.text().isdigit():
+            global SPEED
+            SPEED = int(self.frameText.text())
+
         dataset = dataCombo[self.dataSelected]
         algorithm = algCombo[self.algSelected]
         algorithm.reset()

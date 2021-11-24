@@ -56,6 +56,8 @@ class LOAD_REAL_DATA(UI_OBJ):
         self.allData = out
                 
         stations=[]
+        signal = None
+        startingTime = datetime.datetime(2050, 12, 30, 23, 59, 59)
         for stationName in out:
             station = out[stationName]
             if 'NS' in station :
@@ -63,52 +65,59 @@ class LOAD_REAL_DATA(UI_OBJ):
                 p = PLACES(meta['knet']['stla'],meta['knet']['stlo'])
                 stations.append(STATION_RECORD(place=p,sampleRate=meta['sampling_rate']
                                                ,time=np.array(station['NS']['time']),name=stationName
-                                               ,dataNS=station['NS']['data']
-                                               ,dataEW=station['EW']['data']
-                                               ,dataUD=station['UD']['data']))
+                                               ,dataNS=remove_bias(station['NS']['data'])
+                                               ,dataEW=remove_bias(station['EW']['data'])
+                                               ,dataUD=remove_bias(station['UD']['data'])))
             else :
                 meta = station['NS2']['stream'].meta
                 p = PLACES(meta['knet']['stla'],meta['knet']['stlo'])
                 stations.append(STATION_RECORD(place=p,sampleRate=meta['sampling_rate']
                                                ,time=np.array(station['NS2']['time']),name=stationName
-                                               ,dataNS=station['NS2']['data']
-                                               ,dataEW=station['EW2']['data']
-                                               ,dataUD=station['UD2']['data']))
-        
-
-        st = datetime.datetime(2050, 12, 30, 23, 59, 59)
-        en = datetime.datetime(1990, 1, 1, 1, 1, 1)
-        signal = None
-        savedMax = 0
-        for station in stations:
-            maxx = max(station.dataNS**2+station.dataEW**2)
-            if station.time[0]<st or (station.time[0]==st and (savedMax<maxx)):
-                savedMax  = maxx
-                st = station.time[0]
-                
-                time = station.time
-                
-                ns = station.dataNS
-                ew = station.dataEW
-                ud = station.dataUD
+                                               ,dataNS=remove_bias(station['NS2']['data'])
+                                               ,dataEW=remove_bias(station['EW2']['data'])
+                                               ,dataUD=remove_bias(station['UD2']['data'])))
             
-            if station.time[-1]>en:
-                en = station.time[-1]
-        
-        signal = {'NS':[],'EW':[],'UD':[]}
-        t = st
-        while t<en:
-            if t<time[-1]:
-                idxs = time<=t
+            if stations[-1].time[-1]<startingTime:
+                startingTime = stations[-1].time[-1]
+                signal = {
+                    'NS':stations[-1].dataNS,
+                    'EW':stations[-1].dataEW,
+                    'UD':stations[-1].dataUD,
+                    'time':stations[-1].time}
+
+        # st = datetime.datetime(2050, 12, 30, 23, 59, 59)
+        # en = datetime.datetime(1990, 1, 1, 1, 1, 1)
+        # signal = None
+        # savedMax = 0
+        # for station in stations:
+        #     maxx = max(station.dataNS**2+station.dataEW**2)
+        #     if station.time[0]<st or (station.time[0]==st and (savedMax<maxx)):
+        #         savedMax  = maxx
+        #         st = station.time[0]
                 
-                signal['NS'].append(ns[idxs][-1])
-                signal['EW'].append(ew[idxs][-1])
-                signal['UD'].append(ud[idxs][-1])
-            else:
-                signal['NS'].append(signal['NS'][-1])
-                signal['EW'].append(signal['EW'][-1])
-                signal['UD'].append(signal['UD'][-1])
-            t+=1
+        #         time = station.time
+                
+        #         ns = station.dataNS
+        #         ew = station.dataEW
+        #         ud = station.dataUD
+            
+        #     if station.time[-1]>en:
+        #         en = station.time[-1]
+        
+        # signal = {'NS':[],'EW':[],'UD':[]}
+        # t = st
+        # while t<en:
+        #     if t<time[-1]:
+        #         idxs = time<=t
+                
+        #         signal['NS'].append(ns[idxs][-1])
+        #         signal['EW'].append(ew[idxs][-1])
+        #         signal['UD'].append(ud[idxs][-1])
+        #     else:
+        #         signal['NS'].append(signal['NS'][-1])
+        #         signal['EW'].append(signal['EW'][-1])
+        #         signal['UD'].append(signal['UD'][-1])
+        #     t+=1
                 
         
         knet = meta['knet']
@@ -117,7 +126,7 @@ class LOAD_REAL_DATA(UI_OBJ):
         self.stations = stations
         self.earthquake = earthquake
         
-        self.remove_bias()
+        # self.remove_bias()
     
 
     def Give_Center(self):
