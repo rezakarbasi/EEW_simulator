@@ -50,7 +50,6 @@ class LOAD_REAL_DATA(UI_OBJ):
                     out[f[0]]={}
                 
                 d,t,s = get_data(dataPath+file)
-                d = np.array(d)*s.stats['calib']
                 # d -= d[0]
                 out[f[0]][f[1]] = {'data':d,'time':t,'stream':s} 
         

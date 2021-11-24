@@ -40,6 +40,7 @@ def get_data(path):
         
     freq = stream.stats.sampling_rate
     data = stream.data
+    data = np.array(data)*stream.stats['calib']*100
     time = [stream.stats.starttime+i/freq for i in range(len(data))]
     
     return data,time,stream

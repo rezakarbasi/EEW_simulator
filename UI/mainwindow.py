@@ -13,6 +13,7 @@ warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
 from Data.gen_data.DataGeneration import DATA_GENERATOR
 from Data.gen_data.StepGenerator import STEP_GENERATOR
+from Data.gen_data.DataGenerationFromFile import DATA_GENERATOR_FROM_FILE
 from Data.real_data.LoadData import LOAD_REAL_DATA
 from Algorithm.PgaOptimization import PGA_OPTIMIZATION
 from Algorithm.PgaOptimizationTorch import PGA_OPTIMIZOR_TORCH
@@ -22,7 +23,7 @@ from Objects.objects import PARAMETER_TYPE, PLACES,UI_OBJ
 from Functions import FindDist
 from PyQt5.QtWidgets import QFileDialog
 
-dataCombo = [STEP_GENERATOR(),DATA_GENERATOR(),LOAD_REAL_DATA()]
+dataCombo = [STEP_GENERATOR(),DATA_GENERATOR(),LOAD_REAL_DATA(),DATA_GENERATOR_FROM_FILE()]
 algCombo = [PGA_OPTIMIZATION(), PGA_OPTIMIZOR_TORCH(),STA_LTA_LOCATION()]
 
 def getLog(settings:list=[],tosave:list=[],names:list=[],saveTag=''):
