@@ -92,9 +92,9 @@ class FIND_LOCATION(nn.Module):
         
         loss/=num
 
-        if torch.abs(self.v-6)>4:
+        if torch.abs(self.v-8)>2.5:
             print('exceed v')
-            loss += 10*(self.v-6)**2
+            loss += 10*(self.v-8)**2
 
         return loss
     
