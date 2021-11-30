@@ -74,7 +74,7 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
                 d1 = self.GetDistance(self.lat, self.lon, lat1, lon1)
                 d2 = self.GetDistance(self.lat, self.lon, lat2, lon2)
             
-                o = torch.log(pga1/pga2) + self.c*(d1-d2)
+                o = torch.log(pga1/pga2) + self.c*torch.log(d1/d2)
                 loss += o*torch.min(pga1,pga2)
         if self.c<0:
             loss-=10*self.c
@@ -84,7 +84,7 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
         self.learningRate = self.getParameter(0)
         self.iterations = self.getParameter(1)
             
-    def run(self,stations):
+    def run(self,stations,targetPlace:PLACES=None):
         self.importParameters()
 
         self.stations = stations
@@ -159,5 +159,5 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
             outRec.append(newPGA)
             
         
-        return outTime ,outLat ,outLong, outC, outRec
+        return outTime ,outLat ,outLong, outC, outRec, None
 

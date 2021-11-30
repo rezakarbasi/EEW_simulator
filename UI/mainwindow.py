@@ -64,6 +64,12 @@ from matplotlib import animation
 
 SPEED = 10 # frame/s
 
+def StringIsFloat(string:str):
+    try:
+        return float(string)
+    except:
+        return 0
+
 def PlotError(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath):
     err = []
     for lat,long in zip(outLat,outLong):
@@ -83,7 +89,7 @@ def PlotError(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath):
     plt.savefig(savePath+'error.png')
     plt.close()
 
-def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath):
+def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath, warn=None):
     Writer = animation.writers['ffmpeg']
     writer = Writer(fps=SPEED, metadata=dict(artist='Me'), bitrate=1800*SPEED)
 
@@ -111,7 +117,11 @@ def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath)
     ax_map.add_patch(patches.Rectangle((maxx[0]-deltaLat-0.05,maxx[1]-0.05-deltaLat/10), deltaLat,deltaLat/10,color="black"))
     ax_map.text(maxx[0]-deltaLat*2/3-0.05,maxx[1]-0.04, '20KM', fontsize = 8)
 
-    ax_map.set(xlim=(min(stations[:,0])-0.1, max(stations[:,0])+0.1), ylim=(min(stations[:,1]-0.1), max(stations[:,1])+0.1))
+    minXLim = min(stations[:,0])-0.1
+    maxXLim = max(stations[:,0])+0.1
+    minYLim = min(stations[:,1])-0.1
+    maxYLim = max(stations[:,1])+0.1
+    ax_map.set(xlim=(minXLim, maxXLim), ylim=(minYLim, maxYLim))
     scat = ax_map.scatter([0],[0],label='predicted')
     ax_map.scatter([dataset.earthquake.place.lat],[dataset.earthquake.place.long],s=500,marker='*',c='r',label='epicenter')
     # ax.scatter(stations[:,0],stations[:,1],marker='^',c='k',label='stations')
@@ -120,6 +130,9 @@ def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath)
     ax_map.set_ylabel('longitude')
     line = ax_map.plot([], [], color='b', lw=1, alpha=0.5)[0]
     ax_map.legend()
+
+    if warn!=None:
+        warnText = ax_map.text(minXLim,minYLim,"warning : OFF",color='black')
     #### END map plot
 
     #### signal plots
@@ -129,7 +142,7 @@ def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath)
             continue
         i += 1
         sig = signal[key]
-        ax = fig.add_subplot(len(signal),2,i*2)
+        ax = fig.add_subplot(len(signal)-1,2,i*2)
         # ax.set_aspect('equal')
         minn , maxx = min(sig),max(sig)
         dist = maxx-minn
@@ -168,6 +181,14 @@ def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath)
         ax_map.set_title(str(outTime[i])+'\nC = '+str(outC[i]))
         line.set_xdata(outLat[:i+1])
         line.set_ydata(outLong[:i+1])
+
+        if warn!=None and i!=0:
+            if warn[i]==True and warn[i-1]==False:
+                warnText.set_text("warning : ON")
+                warnText.set_color("red")
+            if warn[i]==False and warn[i-1]==True:
+                warnText.set_text("warning : OFF")
+                warnText.set_color("black")
         #### END map plot
         
         #### signal plots
@@ -264,12 +285,22 @@ class MainWindow(QTabWidget):
         self.algTab.setLayout(self.algLayout)
 
     def ResTabInit(self):
+        self.targetLatLabel = QLineEdit()
+        self.targetLonLabel = QLineEdit()
+
+        localLayout = QGridLayout()
+        localLayout.addWidget(QLabel('target latitude : '), 0, 0)
+        localLayout.addWidget(self.targetLatLabel, 0, 1)
+        localLayout.addWidget(QLabel('\ttarget longitude :'), 0, 2)
+        localLayout.addWidget(self.targetLonLabel, 0, 3)
+
         self.resLayout = QFormLayout()
         self.saveTag = QLineEdit()
         self.resLayout.addRow("Saving Tag : ",self.saveTag)
         self.frameText = QLineEdit()
         self.resLayout.addRow("Frame Rate : ",self.frameText)
         self.resBtn = QPushButton("Generate Results")
+        self.resLayout.addRow(localLayout)
         self.resLayout.addRow(self.resBtn)
         self.resBtn.clicked.connect(self.resBtnClick)
         self.resTab.setLayout(self.resLayout)
@@ -287,13 +318,23 @@ class MainWindow(QTabWidget):
         algorithm.reset()
 
         dataset.run()
+
+        targetLat = StringIsFloat(self.targetLatLabel.text())
+        targetLon = StringIsFloat(self.targetLonLabel.text())
+
+        if targetLat==0 and targetLon==0:
+            targetLat = dataset.stations[0].place.lat
+            targetLon = dataset.stations[0].place.long
+
+        self.targetPlace = PLACES(targetLat,targetLon)
+
         print('dataset ran s')
         signal = dataset.earthquake.signal
-        outTime ,outLat ,outLong, outC, outRec = algorithm.run(dataset.stations)
+        outTime ,outLat ,outLong, outC, outRec, warn = algorithm.run(dataset.stations,self.targetPlace)
         print('run successfully')
         print('save tag is : ',self.saveTag.text())
         savePath = getLog(settings=[dataset,algorithm],saveTag=self.saveTag.text())
-        PlotResults(dataset ,signal ,outTime ,outLat ,outLong, outC, outRec, savePath)
+        PlotResults(dataset ,signal ,outTime ,outLat ,outLong, outC, outRec, savePath, warn)
         PlotError(dataset ,signal ,outTime ,outLat ,outLong, outC, outRec, savePath)
         # print(outTime ,outLat ,outLong, outC, outRec)
         pass
@@ -455,3 +496,20 @@ def main():
 	
 if __name__ == '__main__':
    main()
+
+
+minXLim = 0
+maxXLim = 9
+minYLim = 1
+maxYLim = 18
+
+plt.figure()
+ax = plt.subplot(121)
+ax.xlim(minXLim,maxXLim)
+ax.set_ylim(minYLim,maxYLim)
+a=np.arange(10)
+ax.plot(a,2*a)
+text = ax.text(minXLim+0.5,minYLim+1,"Hi",color='red')
+text.set_text("hafez")
+text.set_color("black")
+plt.show()

@@ -156,7 +156,7 @@ class STA_LTA_LOCATION(UI_OBJ):#(nn.Module):
         self.staPeriod = self.getParameter(5)
         self.ltaPeriod = self.getParameter(6)
 
-    def run(self,stations):
+    def run(self,stations,targetPlace:PLACES=None):
         self.importParameters()
 
         self.stations = stations
@@ -182,6 +182,8 @@ class STA_LTA_LOCATION(UI_OBJ):#(nn.Module):
         outLong = []
         outC = []
         outRec = []
+        warn = []
+
         while time<EndTime:
             time += datetime.timedelta(seconds=0.45)
 
@@ -225,11 +227,12 @@ class STA_LTA_LOCATION(UI_OBJ):#(nn.Module):
             outLat.append(resLat)
             outLong.append(resLon)
             outC.append(resV)
+            warn.append(warnEQ)
             
             outRec.append([{'place':st.place,'pga':st.GetPga(time)[1]} for st in trigedStations])
 
         outLat = [0 if x==None else x for x in outLat]
         outLong = [0 if x==None else x for x in outLong]
         outC = [0 if x==None else x for x in outC]
-        return outTime ,outLat ,outLong, outC, outRec
+        return outTime ,outLat ,outLong, outC, outRec, warn
 

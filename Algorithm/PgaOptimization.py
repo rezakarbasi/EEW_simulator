@@ -52,7 +52,8 @@ def objective_function_exp(var):
             d1 = PLACES.distance(s1['place'],p)
             d2 = PLACES.distance(s2['place'],p)
             
-            o = np.log(p1/p2) + c*(d1-d2)
+            # o = np.log(p1/p2) + c*(d1-d2)
+            o = np.log(p1/p2) + c*np.log(d1/d2)
             out += o*min(p1,p2)
     
     return [out,out,out]
@@ -89,7 +90,7 @@ class PGA_OPTIMIZATION(UI_OBJ) :
         # self.waveVelocity = self.getParameter(1)
         pass
 
-    def run(self,stations):
+    def run(self,stations,targetPlace:PLACES=None):
         self.stations = stations
 
         global newPGA
@@ -177,4 +178,4 @@ class PGA_OPTIMIZATION(UI_OBJ) :
             outRec.append(newPGA)
             
         
-        return outTime ,outLat ,outLong, outC, outRec
+        return outTime ,outLat ,outLong, outC, outRec, None
