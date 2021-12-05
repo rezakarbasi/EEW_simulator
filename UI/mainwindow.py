@@ -23,35 +23,40 @@ from PyQt5.QtWidgets import QMainWindow, QComboBox, QApplication, QCheckBox, QPu
 from Objects.objects import PARAMETER_TYPE, PLACES,UI_OBJ
 from Functions import FindDist
 from PyQt5.QtWidgets import QFileDialog
+import datetime
+import os
+import pickle
 
 dataCombo = [STEP_GENERATOR(),DATA_GENERATOR(),LOAD_REAL_DATA(),DATA_GENERATOR_FROM_FILE()]
 algCombo = [PGA_OPTIMIZATION(), PGA_OPTIMIZOR_TORCH(),STA_LTA_LOCATION()]
 
-def getLog(settings:list=[],tosave:list=[],names:list=[],saveTag=''):
-    import datetime
-    import os
-
+def MakePath(saveTag=''):
     thisTime = datetime.datetime.now()
 
     savePath = './result/' + saveTag + '--' + str(thisTime)[:-7]+'/'
     os.mkdir(savePath)
 
+    return savePath
+
+def GetLog(savePath,settings:list=[],saveTag='',saveString:str="",toSaves:list=[],names:list=[]):
+    thisTime = datetime.datetime.now()
+
     settingStr = "settings : \ntime : "+str(thisTime)+"\nsave tag : "+saveTag+"\n\n"
     for s in settings:
         settingStr+=s.GetConfigStr()+'\n\n'
+    
+    settingStr += saveString
 
     with open(savePath+'settings.txt', 'w') as f:
         f.write(settingStr)
     
-    for file,name in zip(tosave,names):
+    for toSave,name in zip(toSaves,names):
         if type(name)!=str:
             raise Exception("names must be str !!")
         
-        with open(savePath+name, 'w') as f:
-            f.write(file)
+        with open(savePath+name, 'wb') as file:
+            pickle.dump(toSave,file)
     
-    return savePath
-
 
 #%% plot the results
 import matplotlib
@@ -88,6 +93,7 @@ def PlotError(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath):
     plt.ylabel('error in result')
     plt.savefig(savePath+'error.png')
     plt.close()
+    return err
 
 def PlotResults(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath, warn=None):
     Writer = animation.writers['ffmpeg']
@@ -328,15 +334,19 @@ class MainWindow(QTabWidget):
 
         self.targetPlace = PLACES(targetLat,targetLon)
 
+        saveTag=self.saveTag.text()
+
         print('dataset ran s')
         signal = dataset.earthquake.signal
-        outTime ,outLat ,outLong, outC, outRec, warn = algorithm.run(dataset.stations,self.targetPlace)
+        outTime ,outLat ,outLong, outC, outRec, warn, spendingTime = algorithm.run(dataset.stations,self.targetPlace)
         print('run successfully')
-        print('save tag is : ',self.saveTag.text())
-        savePath = getLog(settings=[dataset,algorithm],saveTag=self.saveTag.text())
+        print('save tag is : ',saveTag)
+
+        savePath = MakePath(saveTag=saveTag)
         PlotResults(dataset ,signal ,outTime ,outLat ,outLong, outC, outRec, savePath, warn)
-        PlotError(dataset ,signal ,outTime ,outLat ,outLong, outC, outRec, savePath)
-        # print(outTime ,outLat ,outLong, outC, outRec)
+        err = PlotError(dataset ,signal ,outTime ,outLat ,outLong, outC, outRec, savePath)
+        GetLog(savePath=savePath,settings=[dataset,algorithm],saveTag=saveTag,saveString="last error : {}".format(err[-1]),
+                toSaves=[err,spendingTime],names=['error.pickle','spending.pickle'])
         pass
 
     def GiveResetBtnClick(self,section):
@@ -496,20 +506,3 @@ def main():
 	
 if __name__ == '__main__':
    main()
-
-
-minXLim = 0
-maxXLim = 9
-minYLim = 1
-maxYLim = 18
-
-plt.figure()
-ax = plt.subplot(121)
-ax.xlim(minXLim,maxXLim)
-ax.set_ylim(minYLim,maxYLim)
-a=np.arange(10)
-ax.plot(a,2*a)
-text = ax.text(minXLim+0.5,minYLim+1,"Hi",color='red')
-text.set_text("hafez")
-text.set_color("black")
-plt.show()

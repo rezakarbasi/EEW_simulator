@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 from Objects.objects import PLACES,STATION_RECORD,EARTHQUAKE_OBJ,PARAMETER_TYPE,UI_OBJ
+import time as time_lib
 
 def Deg2Rad(deg):
     return deg*3.14/180
@@ -112,9 +113,13 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
         outLong = []
         outC = []
         outRec = []
+        spendingTime = []
+
         while time<end:
             time += datetime.timedelta(seconds=1)
             
+            spendingTime.append(time_lib.time())
+
             newPGA = []
             for station in self.stations:
                 t,pga = station.GetPga(time)
@@ -151,6 +156,8 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
                     
                     x,y,c = self.lat.item(),self.lon.item(),self.c.item()
                             
+            spendingTime[-1] = time_lib.time()-spendingTime[-1]
+
             outTime.append(time)
             outLat.append(x)
             outLong.append(y)
@@ -159,5 +166,5 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
             outRec.append(newPGA)
             
         
-        return outTime ,outLat ,outLong, outC, outRec, None
+        return outTime ,outLat ,outLong, outC, outRec, None, spendingTime
 

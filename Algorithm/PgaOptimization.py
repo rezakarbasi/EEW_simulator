@@ -1,6 +1,7 @@
 import datetime
 import numpy as np
 from scipy.optimize import fsolve
+import time as time_lib
 
 import sys
 sys.path.append('./')
@@ -125,8 +126,13 @@ class PGA_OPTIMIZATION(UI_OBJ) :
         outLong = []
         outC = []
         outRec = []
+
+        spendingTime = []
+
         while time<end:
             time += datetime.timedelta(seconds=1)
+
+            spendingTime.append(time_lib.time())
             
             newPGA = []
             mostPga = None
@@ -170,6 +176,9 @@ class PGA_OPTIMIZATION(UI_OBJ) :
                     x, y, c = fsolve(objective_function_exp, [x_, y_, c_])                
 
             x,y = PLACES.NormalizeLoc(x,y)
+
+            spendingTime[-1] = time_lib.time()-spendingTime[-1]
+
             outTime.append(time)
             outLat.append(x)
             outLong.append(y)
@@ -178,4 +187,4 @@ class PGA_OPTIMIZATION(UI_OBJ) :
             outRec.append(newPGA)
             
         
-        return outTime ,outLat ,outLong, outC, outRec, None
+        return outTime ,outLat ,outLong, outC, outRec, None, spendingTime

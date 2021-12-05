@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 from Objects.objects import PLACES,STATION_RECORD,EARTHQUAKE_OBJ,PARAMETER_TYPE,UI_OBJ
 import numpy as np
+import time as time_lib
 
 def SetCounter(st,val):
     st.counter=val
@@ -183,9 +184,12 @@ class STA_LTA_LOCATION(UI_OBJ):#(nn.Module):
         outC = []
         outRec = []
         warn = []
+        spendingTime = []
 
         while time<EndTime:
             time += datetime.timedelta(seconds=0.45)
+
+            spendingTime.append(time_lib.time())
 
             for station in self.stations:
                 station.counter -= 1
@@ -223,6 +227,8 @@ class STA_LTA_LOCATION(UI_OBJ):#(nn.Module):
 
                 lastLength = len(trigedStations)
 
+            spendingTime[-1] = time_lib.time()-spendingTime[-1]
+
             outTime.append(time)
             outLat.append(resLat)
             outLong.append(resLon)
@@ -234,5 +240,5 @@ class STA_LTA_LOCATION(UI_OBJ):#(nn.Module):
         outLat = [0 if x==None else x for x in outLat]
         outLong = [0 if x==None else x for x in outLong]
         outC = [0 if x==None else x for x in outC]
-        return outTime ,outLat ,outLong, outC, outRec, warn
+        return outTime ,outLat ,outLong, outC, outRec, warn, spendingTime
 
