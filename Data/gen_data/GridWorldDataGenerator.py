@@ -1,7 +1,12 @@
+import sys
+sys.path.append('./../')
+sys.path.append('.')
+
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from geopy.distance import geodesic
+from scipy import signal
 
 # def deg2rad(deg):
 #     return np.pi*deg/180
@@ -27,8 +32,20 @@ class Parts:
         
         self.center = center
 
-        width_count=(int)(world_width/width+1)
-        self.c=np.random.rand(width_count,width_count)*(maxC-minC)+minC
+        self.width_count=(int)(world_width/width+1)
+
+        self.MakeC()
+    
+    def MakeC(self):
+        a = np.random.randn(self.width_count,self.width_count)
+        kernelSize = int(self.width_count/5)
+        kernel = np.ones((kernelSize,kernelSize))
+        b = signal.convolve2d(a,kernel,mode='same', boundary='symm')
+        b -= np.min(b)
+        b /= np.max(b)-np.min(b)
+        b *= self.maxC-self.minC
+        b += self.minC
+        self.c = b
     
     def GetC(self,i,j):
         i -= self.center.lat - self.width/2
@@ -64,8 +81,8 @@ class Parts:
         return np.exp(-coeff)
     
     def plot(self):
-        ax = sns.heatmap(self.c, linewidth=0.5)
-        plt.title('coefficient heatmap')
+        ax = sns.heatmap(self.c, linewidth=0.01)
+        plt.title('Attenuation Coefficients')
         plt.show()
         
 
@@ -93,8 +110,13 @@ class GRIDWORLD_DATAGENERATOR:
 
 #%% example
         
-# signal = np.arange(10)
-# a = GRIDWORLD_DATAGENERATOR(signal=signal, signalFreq=1, waveVelocity=1, width=1, world_width=20, minC=0.5, maxC=2)
+# import matplotlib
+# matplotlib.use("TkAgg")
+# import matplotlib.pyplot as plt
+# from Objects.objects import PARAMETER_TYPE, PLACES,UI_OBJ
+
+# ss = np.arange(10)
+# a = GRIDWORLD_DATAGENERATOR(center=PLACES(0,0), signalFreq=1, waveVelocity=1, width=1, world_width=20, minC=0.5, maxC=2, signal=ss)
 # newSignal = a.WaveGenerate(x=6,y=0,centerX=0,centerY=0)
 # a.plot()
 
