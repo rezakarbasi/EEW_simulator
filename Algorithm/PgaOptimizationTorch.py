@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 from Objects.objects import PLACES,STATION_RECORD,EARTHQUAKE_OBJ,PARAMETER_TYPE,UI_OBJ
 import time as time_lib
+import numpy as np
 
 def Deg2Rad(deg):
     return deg*3.14/180
@@ -16,7 +17,8 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
     def __init__(self):
         super().__init__(
             PARAMETER_TYPE(float,'learning rate','learning rate of the torch optimizer. like 0.001',0.001),
-            PARAMETER_TYPE(int,'iteration','how many repeats needed for each step? like 10',10)
+            PARAMETER_TYPE(int,'iteration','how many repeats needed for each step? like 10',100),
+            PARAMETER_TYPE(str,'formula','which formula to use exp or akkar',"exp")
             )
         self.reset()
     
@@ -37,15 +39,14 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
     def GetParameters(self):
         return [self.lat,self.lon,self.c]
     
-    @staticmethod
-    def GetDistance(lat1,lon1,lat2,lon2):
+    def GetDistance(self,mat):
         # approximate radius of earth in km
         R = 6373.0
         
-        lat1 = Deg2Rad(lat1)
-        lon1 = Deg2Rad(lon1)
-        lat2 = Deg2Rad(lat2)
-        lon2 = Deg2Rad(lon2)
+        lat1 = Deg2Rad(self.lat)
+        lon1 = Deg2Rad(self.lon)
+        lat2 = Deg2Rad(mat[:,0])
+        lon2 = Deg2Rad(mat[:,1])
         
         dlon = lon2 - lon1
         dlat = lat2 - lat1
@@ -69,21 +70,41 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
     def loss(self,mat):
         loss = torch.tensor([0.0])
         
-        for i,(lat1,lon1,pga1) in enumerate(mat):
-            for lat2,lon2,pga2 in mat[i+1:]:
-                
-                d1 = self.GetDistance(self.lat, self.lon, lat1, lon1)
-                d2 = self.GetDistance(self.lat, self.lon, lat2, lon2)
-            
-                o = torch.log(pga1/pga2) + self.c*torch.log(d1/d2)
-                loss += o*torch.min(pga1,pga2)
+        distance = self.GetDistance(mat)
+
+        index1,index2 = torch.meshgrid(torch.arange(len(mat))+1,torch.arange(len(mat))+1)
+
+        index1 = index1.tril(-1)
+        index1 = index1[index1!=0]-1
+        index2 = index2.tril(-1)
+        index2 = index2[index2!=0]-1
+
+        mat1 = mat[[index1]]
+        mat2 = mat[[index2]]
+
+        pga1 = mat1[:,2]
+        pga2 = mat2[:,2]
+
+        d1 = distance[index1]
+        d2 = distance[index2]
+
+        if self.formula == "exp":
+            loss = torch.log(pga1/pga2) + self.c*(d1-d2)
+        else :
+            loss = torch.log(pga1/pga2) + self.c*torch.log(d1/d2)
+
+        loss = loss**2
+        loss *= torch.min(pga1,pga2)
+        loss = torch.mean(loss)
+
         if self.c<0:
-            loss-=10*self.c
+            loss-=10*self.c[0]
         return loss
             
     def importParameters(self):
         self.learningRate = self.getParameter(0)
         self.iterations = self.getParameter(1)
+        self.formula = self.getParameter(2)
             
     def run(self,stations,targetPlace:PLACES=None):
         self.importParameters()
@@ -116,13 +137,13 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
         spendingTime = []
 
         while time<end:
-            time += datetime.timedelta(seconds=1)
+            time += datetime.timedelta(milliseconds=480)
             
             newPGA = []
             for station in self.stations:
                 t,pga = station.GetPga(time)
                 # print(pga,end='\t')
-                if pga>0.001:
+                if pga>0.5:
                     newPGA.append({'place':station.place,'pga':pga,'time':t})
             
             spendingTime.append(time_lib.time())
@@ -132,9 +153,11 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
                 newPGA = sorted(newPGA,key=lambda x:x['time'])
                 
                 if  (self.lat == 0) and (self.lon == 0) :
-                    x = (newPGA[0]['place'].lat+newPGA[1]['place'].lat)/2
-                    y = (newPGA[0]['place'].long+newPGA[1]['place'].long)/2
-                    c=0.0001
+                    # x = (newPGA[0]['place'].lat+newPGA[1]['place'].lat)/2
+                    # y = (newPGA[0]['place'].long+newPGA[1]['place'].long)/2
+                    x = newPGA[0]['place'].lat + np.random.randn()*0.2
+                    y = newPGA[0]['place'].long + np.random.randn()*0.2
+                    c=0.001
                     
                     self.MakeVariables(x,y,c)
                 

@@ -44,6 +44,19 @@ def GetDistance(loc1,loc2):
     
     return distance
 
+def MakeMatrix(datas):
+    o = []
+    baseTime = datas[0][1]
+    for data in datas:
+        dt = (data[1]-baseTime)
+        if type(dt)!=float:
+            dt = dt.total_seconds()
+
+        o.append([data[0][0],data[0][1],dt])
+    
+    o = torch.tensor(o,requires_grad=False)
+    return o
+
 class FIND_LOCATION(nn.Module):
     def __init__(self,data,lr=1e-2,stepSize=100,gamma=0.1,initialLat=None,initialLon=None,initialV=None):
         super(FIND_LOCATION, self).__init__()
@@ -67,31 +80,72 @@ class FIND_LOCATION(nn.Module):
             
         self.optimizer = torch.optim.Adam([self.lat,self.lon,self.v],lr=lr)
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size=stepSize, gamma=gamma)
-    
+
+    def GetDistance(self,mat):
+        # approximate radius of earth in km
+        R = 6373.0
+        
+        lat1 = Deg2Rad(self.lat)
+        lon1 = Deg2Rad(self.lon)
+        lat2 = Deg2Rad(mat[:,0])
+        lon2 = Deg2Rad(mat[:,1])
+        
+        dlon = lon2 - lon1
+        dlat = lat2 - lat1
+        
+        a = torch.sin(dlat / 2)**2 + torch.cos(lat1) * torch.cos(lat2) * torch.sin(dlon / 2)**2
+        c = 2 * torch.atan2(torch.sqrt(a), torch.sqrt(1 - a))
+        
+        distance = R * c
+        
+        return distance
+
     def LossFunction(self):
         loss = 0
         num = 0
 
         if self.v<0:
             loss-=self.v*10
-
-        for i,d1 in enumerate(self.data):
-            loc1,time1 = d1
-            deltaD1 = GetDistance(loc1,(self.lat,self.lon))
-            
-            for d2 in self.data[i+1:]:
-                loc2,time2 = d2
-                deltaD2 = GetDistance(loc2,(self.lat,self.lon))
-
-                deltaT = (time2-time1)
-                if type(time2-time1)!=float:
-                    deltaT = deltaT.total_seconds()
-                deltaD = (deltaD2-deltaD1)
-
-                loss += (deltaD-self.v*deltaT)**2
-                num+=1
         
-        loss/=num
+        mat = MakeMatrix(self.data)
+
+        distance = self.GetDistance(mat)
+
+        index1,index2 = torch.meshgrid(torch.arange(len(mat))+1,torch.arange(len(mat))+1)
+
+        index1 = index1.tril(-1)
+        index1 = index1[index1!=0]-1
+        index2 = index2.tril(-1)
+        index2 = index2[index2!=0]-1
+
+        mat1 = mat[[index1]]
+        mat2 = mat[[index2]]
+
+        deltaD = distance[index1] - distance[index2]
+        deltaT = mat1[:,2] - mat2[:,2]
+
+        loss += (deltaD-self.v*deltaT)**2
+        loss = torch.mean(loss)
+
+
+
+        # for i,d1 in enumerate(self.data):
+        #     loc1,time1 = d1
+        #     deltaD1 = GetDistance(loc1,(self.lat,self.lon))
+            
+        #     for d2 in self.data[i+1:]:
+        #         loc2,time2 = d2
+        #         deltaD2 = GetDistance(loc2,(self.lat,self.lon))
+
+        #         deltaT = (time2-time1)
+        #         if type(time2-time1)!=float:
+        #             deltaT = deltaT.total_seconds()
+        #         deltaD = (deltaD2-deltaD1)
+
+        #         loss += (deltaD-self.v*deltaT)**2
+        #         num+=1
+        
+        # loss/=num
 
         # if torch.abs(self.v-8)>2.5:
         #     print('exceed v')

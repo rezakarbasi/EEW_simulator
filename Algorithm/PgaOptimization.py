@@ -1,5 +1,6 @@
 import datetime
 import numpy as np
+from numpy.core.fromnumeric import repeat
 from scipy.optimize import fsolve
 import time as time_lib
 
@@ -50,15 +51,12 @@ def objective_function_exp(var):
         for s2 in newPGA[i+1:]:
             p2 = s2['pga']
             
-            d1 = PLACES.distance(s1['place'],p)
-            d2 = PLACES.distance(s2['place'],p)
-
-            d1 = max(d1,0.5)
-            d2 = max(d2,0.5)
+            d1 = PLACES.distance(s1['place'],p) + 0.1
+            d2 = PLACES.distance(s2['place'],p) + 0.1
             
-            # o = np.log(p1/p2) + c*(d1-d2)
-            o = np.log(p1/p2) + c*np.log(d1/d2)
-            out += o*min(p1,p2)
+            o = np.log(p1/p2) + c*(d1-d2)
+            # o = np.log(p1/p2) + c*np.log(d1/d2)
+            out += o*p1*p2
     
     return [out,out,out]
             
@@ -133,7 +131,7 @@ class PGA_OPTIMIZATION(UI_OBJ) :
         spendingTime = []
 
         while time<end:
-            time += datetime.timedelta(seconds=1)
+            time += datetime.timedelta(milliseconds=480)
             
             newPGA = []
             mostPga = None
@@ -152,34 +150,39 @@ class PGA_OPTIMIZATION(UI_OBJ) :
 
             # print(newPGA)
             # print(len(newPGA))
-            if newPGA!=oldPGA and len(newPGA)>3:
+            newPGA = sorted(newPGA,key=lambda x:-x['pga'])[:10]
+            if newPGA!=oldPGA and len(newPGA)>2:
                 oldPGA = newPGA
-                newPGA = sorted(newPGA,key=lambda x:x['time'])
 
-                if x == y == 0 or PLACES.distance(x,y,mostPga['place'].lat,mostPga['place'].long)>50:
-                    # ss=0
-                    # x=0
-                    # y=0
-                    # for pga in newPGA:
-                    #     x += pga['place'].lat*pga['pga']
-                    #     y += pga['place'].long*pga['pga']
-                    #     ss += pga['pga']
-                    # x /= ss
-                    # y /= ss
-                    # c = 0.0001
-                    x = mostPga['place'].lat
-                    y = mostPga['place'].long
-                    c = 0.1
-                    print('new reset',x,y)
-                
-                x_ = y_ = c_ =0
-                
-                while not(x == x_ and y == y_ and c == c_):
+                x_ = y_ = c_ = 0.1
+                repeat = True
+                while repeat:#not(x == x_ and y == y_ and c == c_):
+                    repeat = False
+
+                    if x == y == 0 or PLACES.distance(x,y,mostPga['place'].lat,mostPga['place'].long)>50:
+                        # ss=0
+                        # x=0
+                        # y=0
+                        # for pga in newPGA:
+                        #     x += pga['place'].lat*pga['pga']
+                        #     y += pga['place'].long*pga['pga']
+                        #     ss += pga['pga']
+                        # x /= ss
+                        # y /= ss
+                        # c = 0.0001
+                        x = mostPga['place'].lat + np.random.randn()*0.2
+                        y = mostPga['place'].long + np.random.randn()*0.2
+                        c = 1e-3
+                        print('new reset',x,y)
+
                     x_ = x
                     y_ = y
                     c_ = c
-                    # print(x,y,c)
-                    x, y, c = fsolve(objective_function_exp, [x_, y_, c_])                
+                    x, y, c = fsolve(objective_function_exp, [x_, y_, c_])
+
+                    if PLACES.distance(x,y,mostPga['place'].lat,mostPga['place'].long)>50:
+                        repeat = True
+                    
 
             x,y = PLACES.NormalizeLoc(x,y)
 
