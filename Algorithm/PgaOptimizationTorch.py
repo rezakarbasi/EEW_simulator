@@ -118,8 +118,6 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
         while time<end:
             time += datetime.timedelta(seconds=1)
             
-            spendingTime.append(time_lib.time())
-
             newPGA = []
             for station in self.stations:
                 t,pga = station.GetPga(time)
@@ -127,6 +125,8 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
                 if pga>0.001:
                     newPGA.append({'place':station.place,'pga':pga,'time':t})
             
+            spendingTime.append(time_lib.time())
+
             if newPGA!=oldPGA and len(newPGA)>3:
                 oldPGA = newPGA
                 newPGA = sorted(newPGA,key=lambda x:x['time'])

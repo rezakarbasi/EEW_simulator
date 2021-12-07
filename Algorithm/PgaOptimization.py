@@ -52,6 +52,9 @@ def objective_function_exp(var):
             
             d1 = PLACES.distance(s1['place'],p)
             d2 = PLACES.distance(s2['place'],p)
+
+            d1 = max(d1,0.5)
+            d2 = max(d2,0.5)
             
             # o = np.log(p1/p2) + c*(d1-d2)
             o = np.log(p1/p2) + c*np.log(d1/d2)
@@ -131,15 +134,13 @@ class PGA_OPTIMIZATION(UI_OBJ) :
 
         while time<end:
             time += datetime.timedelta(seconds=1)
-
-            spendingTime.append(time_lib.time())
             
             newPGA = []
             mostPga = None
             for station in self.stations:
                 t,pga = station.GetPga(time)
                 # print(pga,end='\t')
-                if pga>0.001:
+                if pga>0.5:
                     newPGA.append({'place':station.place,'pga':pga,'time':t})
 
                     if mostPga==None:
@@ -147,6 +148,8 @@ class PGA_OPTIMIZATION(UI_OBJ) :
                     elif mostPga['pga']<newPGA[-1]['pga']:
                         mostPga=newPGA[-1]
             
+            spendingTime.append(time_lib.time())
+
             # print(newPGA)
             # print(len(newPGA))
             if newPGA!=oldPGA and len(newPGA)>3:
@@ -154,16 +157,19 @@ class PGA_OPTIMIZATION(UI_OBJ) :
                 newPGA = sorted(newPGA,key=lambda x:x['time'])
 
                 if x == y == 0 or PLACES.distance(x,y,mostPga['place'].lat,mostPga['place'].long)>50:
-                    ss=0
-                    x=0
-                    y=0
-                    for pga in newPGA:
-                        x += pga['place'].lat*pga['pga']
-                        y += pga['place'].long*pga['pga']
-                        ss += pga['pga']
-                    x /= ss
-                    y /= ss
-                    c = 0.0001
+                    # ss=0
+                    # x=0
+                    # y=0
+                    # for pga in newPGA:
+                    #     x += pga['place'].lat*pga['pga']
+                    #     y += pga['place'].long*pga['pga']
+                    #     ss += pga['pga']
+                    # x /= ss
+                    # y /= ss
+                    # c = 0.0001
+                    x = mostPga['place'].lat
+                    y = mostPga['place'].long
+                    c = 0.1
                     print('new reset',x,y)
                 
                 x_ = y_ = c_ =0

@@ -17,12 +17,12 @@ class DATA_GENERATOR(UI_OBJ):
     def __init__(self):
         
         super().__init__(
-                         PARAMETER_TYPE(float,'wave velocity','wave velocity like 0.3(km/s)',0.4),
-                         PARAMETER_TYPE(float,'world width','world_width like 0.5 degree',0.6),
-                         PARAMETER_TYPE(float,'width','grid width like 0.02 degree',0.04),
+                         PARAMETER_TYPE(float,'wave velocity','wave velocity like 0.3(km/s)',8),
+                         PARAMETER_TYPE(float,'world width','world_width like 0.5 degree',1.0),
+                         PARAMETER_TYPE(float,'width','grid width like 0.02 degree',0.08),
                          PARAMETER_TYPE(int,'number of stations','number of Stations like 10',15),
-                         PARAMETER_TYPE(float,'min C','minC 0.02',0.05),
-                         PARAMETER_TYPE(float,'max C','maxC 0.1',0.2),
+                         PARAMETER_TYPE(float,'min C','minC 0.02',0.005),
+                         PARAMETER_TYPE(float,'max C','maxC 0.1',0.02),
                          PARAMETER_TYPE(float,'center lat','latitude of center like : 10.0',10.0),
                          PARAMETER_TYPE(float,'center long','longitude of center like : -20.0',-20.0),
                          PARAMETER_TYPE(str,'base signal path',"Enter path of the base signal",
@@ -76,14 +76,14 @@ class DATA_GENERATOR(UI_OBJ):
         # signal,signalFreq,waveVelocity,numSectors,maxDist,minC,maxC,areaSector=None,eachDist=None
         # generator = method(signalFreq=rate ,waveVelocity=waveVelocity ,**kwargs)
         # center, signalFreq, waveVelocity, width, world_width, minC, maxC, signal
-        generator = GRIDWORLD_DATAGENERATOR(signalFreq=self.signalFreq, waveVelocity=self.waveVelocity, 
+        self.generator = GRIDWORLD_DATAGENERATOR(signalFreq=self.signalFreq, waveVelocity=self.waveVelocity, 
                                             width=self.width, world_width=self.world_width, minC=self.minC, maxC=self.maxC, 
                                             signal=self.baseSignal, center=self.center)
         earthquake_time = datetime.datetime(2020, 8, 9, 15, 0, 0)
         interval = datetime.timedelta(milliseconds = 1000/self.signalFreq)
         for i in range(self.numStations):
             stationPlace = PLACES.random(self.world_width,self.world_width,self.center.lat,self.center.long)
-            signal = generator.WaveGenerate(x=stationPlace.lat,y=stationPlace.long,centerX=self.center.lat,centerY=self.center.long)
+            signal = self.generator.WaveGenerate(x=stationPlace.lat,y=stationPlace.long,centerX=self.center.lat,centerY=self.center.long)
             time = np.array([earthquake_time+interval*i for i in range(len(signal))])
             stations.append(STATION_RECORD(stationPlace,self.signalFreq,time,name=str(i),data=signal))
         
