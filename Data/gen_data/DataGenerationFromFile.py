@@ -41,6 +41,7 @@ class DATA_GENERATOR_FROM_FILE(UI_OBJ):
                          "/Users/rezakarbasi/PersonalFiles/Projects/1_DarCProj/MSE Project/drop-coefficient-simulation/Japan/ex_20170412031000/TCGH061704120310.EW2",
                         #  "/Users/rezakarbasi/PersonalFiles/Projects/1_DarCProj/MSE Project/drop-coefficient-simulation/Japan/ex_20210919171900/TYM0122109191719.EW",
                          openFileFinder=True),
+                         PARAMETER_TYPE(float,"time uncertainry","time shift noise domain",1.0)
                          )
 
     def GetConfigStr(self):
@@ -54,6 +55,8 @@ class DATA_GENERATOR_FROM_FILE(UI_OBJ):
         self.udSignal = self.getParameter(1)
         self.nsSignal = self.getParameter(2)
         self.ewSignal = self.getParameter(3)
+
+        self.timeNoise = self.getParameter(4)
 
         if 'UD' in self.udSignal :
             signal,_,stream = get_data(self.udSignal)
@@ -165,7 +168,7 @@ class DATA_GENERATOR_FROM_FILE(UI_OBJ):
             ew = hSignal * np.cos(ii*4.6/(2*3.14))
             ud = vSignal
 
-            time = np.arange(len(ns))*interval + earthquake_time
+            time = np.arange(len(ns))*interval + earthquake_time + datetime.timedelta(seconds=np.random.rand()*self.timeNoise)
 
             p = PLACES(lat,lon)
             name += 1

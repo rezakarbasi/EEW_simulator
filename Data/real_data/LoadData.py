@@ -19,7 +19,9 @@ class LOAD_REAL_DATA(UI_OBJ):
         
         super().__init__(PARAMETER_TYPE(str,'path','path of the data files',
         "/Users/rezakarbasi/PersonalFiles/Projects/1_DarCProj/MSE Project/Simulator App/EEW_simulator/Data/real_data/Japan/",
-        openPathFinder=True))
+        openPathFinder=True),
+        PARAMETER_TYPE(float,"time uncertainry","time shift noise domain",1.0)
+        )
 
     def GetConfigStr(self):
         out = "Data Reader :\n\tThis data handler uses historical data to simulate our algorithm . It's parameters : "
@@ -29,6 +31,7 @@ class LOAD_REAL_DATA(UI_OBJ):
 
     def importParameters(self):
         self.path = self.getParameter(0)
+        self.timeNoise = self.getParameter(1)
 
     def run(self):
         self.importParameters()
@@ -63,8 +66,9 @@ class LOAD_REAL_DATA(UI_OBJ):
             if 'NS' in station :
                 meta = station['NS']['stream'].meta
                 p = PLACES(meta['knet']['stla'],meta['knet']['stlo'])
+                stationTime = np.array(station['NS']['time']) + np.random.rand()*self.timeNoise
                 stations.append(STATION_RECORD(place=p,sampleRate=meta['sampling_rate']
-                                               ,time=np.array(station['NS']['time']),name=stationName
+                                               ,time=stationTime,name=stationName
                                                ,dataNS=remove_bias(station['NS']['data'])
                                                ,dataEW=remove_bias(station['EW']['data'])
                                                ,dataUD=remove_bias(station['UD']['data'])))

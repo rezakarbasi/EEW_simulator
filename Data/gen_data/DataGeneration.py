@@ -27,7 +27,8 @@ class DATA_GENERATOR(UI_OBJ):
                          PARAMETER_TYPE(float,'center long','longitude of center like : -20.0',-20.0),
                          PARAMETER_TYPE(str,'base signal path',"Enter path of the base signal",
                          "/Users/rezakarbasi/PersonalFiles/Projects/1_DarCProj/MSE Project/drop-coefficient-simulation/Japan/ex_20210919171900/TYM0122109191719.NS",
-                         openFileFinder=True)
+                         openFileFinder=True),
+                         PARAMETER_TYPE(float,"time uncertainry","time shift noise domain",1.0)
                          )
 
     def GetConfigStr(self):
@@ -49,6 +50,8 @@ class DATA_GENERATOR(UI_OBJ):
         self.center=PLACES(self.center_lat,self.center_long)
 
         path = self.getParameter(8)
+        self.timeNoise = self.getParameter(9)
+
         
         if ('NS' in path) or ('EW' in path) or ('UD' in path):
             baseSignal,_,stream = get_data(path)
@@ -84,7 +87,7 @@ class DATA_GENERATOR(UI_OBJ):
         for i in range(self.numStations):
             stationPlace = PLACES.random(self.world_width,self.world_width,self.center.lat,self.center.long)
             signal = self.generator.WaveGenerate(x=stationPlace.lat,y=stationPlace.long,centerX=self.center.lat,centerY=self.center.long)
-            time = np.array([earthquake_time+interval*i for i in range(len(signal))])
+            time = np.array([earthquake_time+interval*i for i in range(len(signal))]) + datetime.timedelta(seconds=np.random.rand()*self.timeNoise)
             stations.append(STATION_RECORD(stationPlace,self.signalFreq,time,name=str(i),data=signal))
         
         self.stations = stations
