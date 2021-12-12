@@ -127,7 +127,7 @@ class DATA_GENERATOR_FROM_FILE(UI_OBJ):
     def run(self):
         self.importParameters()
         
-        np.random.seed(10)
+        # np.random.seed(10)
         
         dt = str(self.info['date'])[:-8]+str(self.info['time'])
         earthquake_time = datetime.datetime.strptime(dt, '%Y-%m-%d %H:%M:%S')

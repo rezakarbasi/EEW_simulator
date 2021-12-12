@@ -15,13 +15,13 @@ class STEP_GENERATOR(UI_OBJ):
     
     def __init__(self):
         
-        super().__init__(PARAMETER_TYPE(float,'signalFreq','signal frequency like 60.6(Hz)',1.0),
-                         PARAMETER_TYPE(float,'waveVelocity','wave velocity like 10.3(km/s)',1.0),
+        super().__init__(PARAMETER_TYPE(float,'signalFreq','signal frequency like 60.6(Hz)',10.0),
+                         PARAMETER_TYPE(float,'waveVelocity','wave velocity like 10.3(km/s)',8.0),
                          PARAMETER_TYPE(float,'world_width','world_width like 32.2(km)',1.0),
-                         PARAMETER_TYPE(float,'width','grid width like 1(km)',0.01),
-                         PARAMETER_TYPE(int,'numStations','number of Stations like 10',10),
-                         PARAMETER_TYPE(float,'minC','minC 0.02',0.02),
-                         PARAMETER_TYPE(float,'maxC','maxC 0.02',0.1),
+                         PARAMETER_TYPE(float,'width','grid width like 1(km)',0.08),
+                         PARAMETER_TYPE(int,'numStations','number of Stations like 10',20),
+                         PARAMETER_TYPE(float,'minC','minC 0.02',0.005),
+                         PARAMETER_TYPE(float,'maxC','maxC 0.02',0.025),
                          PARAMETER_TYPE(float,'center_lat','latitude of center like : 10.0',10.0),
                          PARAMETER_TYPE(float,'center_long','longitude of center like : -20.0',-20.0),
                          PARAMETER_TYPE(float,"time uncertainry","time shift noise domain",1.0)
@@ -56,7 +56,7 @@ class STEP_GENERATOR(UI_OBJ):
     def run(self):
         self.importParameters()
         
-        np.random.seed(10)
+        # np.random.seed(10)
 
         # self.center = center
         # self.method = method

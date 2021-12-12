@@ -20,7 +20,7 @@ class DATA_GENERATOR(UI_OBJ):
                          PARAMETER_TYPE(float,'wave velocity','wave velocity like 0.3(km/s)',8),
                          PARAMETER_TYPE(float,'world width','world_width like 0.5 degree',1.0),
                          PARAMETER_TYPE(float,'width','grid width like 0.02 degree',0.08),
-                         PARAMETER_TYPE(int,'number of stations','number of Stations like 10',15),
+                         PARAMETER_TYPE(int,'number of stations','number of Stations like 10',20),
                          PARAMETER_TYPE(float,'min C','minC 0.005',0.005),
                          PARAMETER_TYPE(float,'max C','maxC 0.025',0.025),
                          PARAMETER_TYPE(float,'center lat','latitude of center like : 10.0',10.0),
@@ -68,7 +68,7 @@ class DATA_GENERATOR(UI_OBJ):
     def run(self):
         self.importParameters()
         
-        np.random.seed(531)
+        # np.random.seed(531)
 
         # self.center = center
         # self.method = method

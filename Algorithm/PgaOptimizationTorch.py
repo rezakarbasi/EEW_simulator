@@ -18,7 +18,8 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
         super().__init__(
             PARAMETER_TYPE(float,'learning rate','learning rate of the torch optimizer. like 0.001',0.001),
             PARAMETER_TYPE(int,'iteration','how many repeats needed for each step? like 10',100),
-            PARAMETER_TYPE(str,'formula','which formula to use exp or akkar',"exp")
+            PARAMETER_TYPE(str,'formula','which formula to use exp or akkar',"exp"),
+            PARAMETER_TYPE(int,'station maximum','maximum stations to start the algorithm. like 10',10)
             )
         self.reset()
     
@@ -105,6 +106,8 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
         self.learningRate = self.getParameter(0)
         self.iterations = self.getParameter(1)
         self.formula = self.getParameter(2)
+
+        self.stationMax = self.getParameter(3)
             
     def run(self,stations,targetPlace:PLACES=None):
         self.importParameters()
@@ -136,6 +139,8 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
         outRec = []
         spendingTime = []
 
+        lastDataLength = 0
+
         while time<end:
             time += datetime.timedelta(milliseconds=480)
             
@@ -148,7 +153,7 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
             
             spendingTime.append(time_lib.time())
 
-            if newPGA!=oldPGA and len(newPGA)>3:
+            if newPGA!=oldPGA and len(newPGA)>3 and lastDataLength<self.stationMax:
                 oldPGA = newPGA
                 newPGA = sorted(newPGA,key=lambda x:x['time'])
                 
@@ -163,7 +168,8 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
                 
                 x_ = y_ = c_ =0
                 optimizer = torch.optim.Adam(self.GetParameters(),lr=self.learningRate)
-                matrix = self.MakeMatrix(newPGA)
+                matrix = self.MakeMatrix(newPGA[:self.stationMax])
+                lastDataLength = len(newPGA)
                 
 
                 # while not(x == x_ and y == y_ and c == c_):

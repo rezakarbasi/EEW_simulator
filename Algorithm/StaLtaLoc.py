@@ -1,4 +1,5 @@
 import datetime
+from matplotlib import pyplot as plt
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -102,10 +103,6 @@ class FIND_LOCATION(nn.Module):
 
     def LossFunction(self):
         loss = 0
-        num = 0
-
-        if self.v<0:
-            loss-=self.v*10
         
         mat = MakeMatrix(self.data)
 
@@ -124,9 +121,11 @@ class FIND_LOCATION(nn.Module):
         deltaD = distance[index1] - distance[index2]
         deltaT = mat1[:,2] - mat2[:,2]
 
-        loss += (deltaD-self.v*deltaT)**2
+        loss = (deltaD-self.v*deltaT)**2
         loss = torch.mean(loss)
 
+        if self.v<0:
+            loss-=self.v*10
 
 
         # for i,d1 in enumerate(self.data):
@@ -179,7 +178,8 @@ class STA_LTA_LOCATION(UI_OBJ):#(nn.Module):
             PARAMETER_TYPE(float,'learning rate','learning rate of the torch optimizer. like 0.001',0.01),
             PARAMETER_TYPE(int,'iteration','how many repeats needed for each step? like 10',200),
 
-            PARAMETER_TYPE(int,'station limit','minimum stations to start the algorithm. like 3',3),
+            PARAMETER_TYPE(int,'station minimum','minimum stations to start the algorithm. like 3',3),
+            PARAMETER_TYPE(int,'station maximum','maximum stations to start the algorithm. like 10',10),
             PARAMETER_TYPE(float,'trigger threshold','sta/lta threshold like 4.1',4.1),
             PARAMETER_TYPE(float,'remove trigger time','time after removing noisy trig. like 1.0',1.0),
 
@@ -204,12 +204,14 @@ class STA_LTA_LOCATION(UI_OBJ):#(nn.Module):
         self.learningRate = self.getParameter(0)
         self.iterations = self.getParameter(1)
 
-        self.stationLimit = self.getParameter(2)
-        self.trigThreshold = self.getParameter(3)
-        self.removeTrigTime = self.getParameter(4)
+        self.stationMin = self.getParameter(2)
+        self.stationMax = self.getParameter(3)
 
-        self.staPeriod = self.getParameter(5)
-        self.ltaPeriod = self.getParameter(6)
+        self.trigThreshold = self.getParameter(4)
+        self.removeTrigTime = self.getParameter(5)
+
+        self.staPeriod = self.getParameter(6)
+        self.ltaPeriod = self.getParameter(7)
 
     def run(self,stations,targetPlace:PLACES=None):
         self.importParameters()
@@ -252,7 +254,7 @@ class STA_LTA_LOCATION(UI_OBJ):#(nn.Module):
                         station.trigTime = t
                         trigedStations.append(station)
 
-                    if len(trigedStations)>=self.stationLimit:
+                    if len(trigedStations)>=self.stationMin:
                         warnEQ = True
                 
             spendingTime.append(time_lib.time())
@@ -273,7 +275,7 @@ class STA_LTA_LOCATION(UI_OBJ):#(nn.Module):
                     summary = [((x.place.lat,x.place.long),x.trigTime) for x in trigedStations]
                     summarySorted = sorted(summary,key=lambda x:x[1])
 
-                    model = FIND_LOCATION(summarySorted[:10],lr=1e-2,stepSize=100,gamma=.1,initialLat=resLat,initialLon=resLon,initialV=resV)
+                    model = FIND_LOCATION(summarySorted[:self.stationMax],lr=1e-2,stepSize=100,gamma=.1,initialLat=resLat,initialLon=resLon,initialV=resV)
                     resLat,resLon,resV,loss = model.learn(self.iterations)
 
                 else :

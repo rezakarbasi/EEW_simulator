@@ -61,10 +61,10 @@ import datetime
 import os
 import pickle
 
-def MakePath(saveTag=''):
+def MakePath(saveTag='',basePath='./result/'):
     thisTime = datetime.datetime.now()
 
-    savePath = './result/' + saveTag + '--' + str(thisTime)[:-7]+'/'
+    savePath = basePath + saveTag + '--' + str(thisTime)[:-7]+'/'
     os.mkdir(savePath)
 
     return savePath
