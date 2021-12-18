@@ -66,6 +66,7 @@ class LOAD_REAL_DATA(UI_OBJ):
             if 'NS' in station :
                 meta = station['NS']['stream'].meta
                 p = PLACES(meta['knet']['stla'],meta['knet']['stlo'])
+                self.mag = meta['knet']['mag']
                 stationTime = np.array(station['NS']['time']) + np.random.rand()*self.timeNoise
                 stations.append(STATION_RECORD(place=p,sampleRate=meta['sampling_rate']
                                                ,time=stationTime,name=stationName
@@ -75,6 +76,7 @@ class LOAD_REAL_DATA(UI_OBJ):
             else :
                 meta = station['NS2']['stream'].meta
                 p = PLACES(meta['knet']['stla'],meta['knet']['stlo'])
+                self.mag = meta['knet']['mag']
                 stations.append(STATION_RECORD(place=p,sampleRate=meta['sampling_rate']
                                                ,time=np.array(station['NS2']['time']),name=stationName
                                                ,dataNS=remove_bias(station['NS2']['data'])
@@ -135,6 +137,9 @@ class LOAD_REAL_DATA(UI_OBJ):
 
     def Give_Center(self):
         return self.earthquake.place
+
+    def Give_Magnitude(self):
+        return self.mag
     
     def Give_Stations(self):
         return self.stations
