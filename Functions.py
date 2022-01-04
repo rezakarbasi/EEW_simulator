@@ -99,7 +99,7 @@ import matplotlib.patches as patches
 from matplotlib.animation import FuncAnimation
 from matplotlib import animation
 
-def PlotError(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath):
+def PlotError(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath, saveNum:str=''):
     err = []
     for lat,long in zip(outLat,outLong):
         if lat==None:
@@ -115,7 +115,7 @@ def PlotError(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath):
     plt.title('error in steps (km)')
     plt.xlabel('running steps')
     plt.ylabel('error in result')
-    plt.savefig(savePath+'error.png')
+    plt.savefig(savePath+'error'+saveNum+'.png')
     plt.close()
     return err
 

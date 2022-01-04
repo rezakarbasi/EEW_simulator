@@ -278,6 +278,11 @@ class STA_LTA_LOCATION(UI_OBJ):#(nn.Module):
                     model = FIND_LOCATION(summarySorted[:self.stationMax],lr=1e-2,stepSize=100,gamma=.1,initialLat=resLat,initialLon=resLon,initialV=resV)
                     resLat,resLon,resV,loss = model.learn(self.iterations)
 
+                    if GetDistance((resLat,resLon),summarySorted[0][0])>50:
+                        resLat,resLon = summarySorted[0][0]
+                        resLat -= 0.01
+                        resLon += 0.01
+
                 else :
                     pass
 
@@ -291,7 +296,7 @@ class STA_LTA_LOCATION(UI_OBJ):#(nn.Module):
             outC.append(resV)
             warn.append(warnEQ)
             
-            outRec.append([{'place':st.place,'pga':st.GetPga(time)[1]} for st in trigedStations])
+            outRec.append([{'place':st.place,'name':st.name,'pga':st.GetPga(time)[1]} for st in trigedStations])
 
         outLat = [0 if x==None else x for x in outLat]
         outLong = [0 if x==None else x for x in outLong]
