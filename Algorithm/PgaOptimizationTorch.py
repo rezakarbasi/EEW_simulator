@@ -122,7 +122,7 @@ class PGA_OPTIMIZOR_TORCH(UI_OBJ):#(nn.Module):
         
         for station in self.stations[1:]:
             if start>station.time[0]:
-                start>station.time[0]
+                start=station.time[0]
             if end<station.time[-1]:
                 end=station.time[-1]
 

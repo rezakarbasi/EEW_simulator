@@ -3,3 +3,5 @@
 *ignore
 result/
 Analyse/
+*.DS_Store
+*.pyc

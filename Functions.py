@@ -101,12 +101,29 @@ from matplotlib import animation
 
 def PlotError(dataset,signal,outTime ,outLat ,outLong, outC, outRec, savePath, saveNum:str=''):
     err = []
-    for lat,long in zip(outLat,outLong):
-        if lat==None:
-            lat=0
-        if long==None:
-            long=0
-        err.append(PLACES.distance(dataset.Give_Center(),lat,long))
+    outLat = np.nan_to_num(np.array(outLat),posinf=0.0,neginf=0.0)
+    outLong = np.nan_to_num(np.array(outLong),posinf=0.0,neginf=0.0)
+
+    try:
+        for lat,long in zip(outLat,outLong):
+            # print(type(long))
+            # if type(lat)!=float or type(long)!=float:
+            #     lat=0
+            #     long=0
+            # if dataset.Give_Center().lat-3<lat<dataset.Give_Center().lat+3 or dataset.Give_Center().long-3<long<dataset.Give_Center().long+3:
+            #     lat=0
+            #     long=0
+            # try:
+            #     lat = float(lat)
+            #     long = float(long)
+            # except:
+            #     lat = 0.0
+            #     long = 0.0
+            err.append(PLACES.distance(dataset.Give_Center(),lat,long))
+    except:
+        print('--------------------------')
+        print(outLong)
+        print(outLat)
     plt.close()
     plt.figure()
     plt.plot(outTime,err)

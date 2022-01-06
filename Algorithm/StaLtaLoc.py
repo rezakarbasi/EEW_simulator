@@ -59,27 +59,32 @@ def MakeMatrix(datas):
     return o
 
 class FIND_LOCATION(nn.Module):
-    def __init__(self,data,lr=1e-2,stepSize=100,gamma=0.1,initialLat=None,initialLon=None,initialV=None):
+    def __init__(self,data,lr=1e-2,stepSize=100,gamma=0.1,initialLat=None,initialLon=None,initialDepth=None,initialV=None):
         super(FIND_LOCATION, self).__init__()
 
         self.data = data
 
         if initialLat==None:
-            self.lat = torch.tensor(data[0][0][0]+np.random.randn()*0.01,requires_grad=True)
+            self.lat = torch.tensor(data[0][0][0]+np.random.randn()*0.001,requires_grad=True)
         else:
             self.lat = torch.tensor(initialLat,requires_grad=True)
             
         if initialLon==None:
-            self.lon = torch.tensor(data[0][0][1]+np.random.randn()*0.01,requires_grad=True)
+            self.lon = torch.tensor(data[0][0][1]+np.random.randn()*0.001,requires_grad=True)
         else:
             self.lon = torch.tensor(initialLon,requires_grad=True)
+            
+        if initialDepth==None:
+            self.depth = torch.tensor(20.0,requires_grad=True)
+        else:
+            self.depth = torch.tensor(initialDepth,requires_grad=True)
 
         if initialV==None:
-            self.v = torch.tensor(6.0,requires_grad=True)
+            self.v = torch.tensor(8.0,requires_grad=True)
         else:
             self.v = torch.tensor(initialV,requires_grad=True)
             
-        self.optimizer = torch.optim.Adam([self.lat,self.lon,self.v],lr=lr)
+        self.optimizer = torch.optim.Adam([self.lat,self.lon,self.depth,self.v],lr=lr)
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size=stepSize, gamma=gamma)
 
     def GetDistance(self,mat):
@@ -99,7 +104,7 @@ class FIND_LOCATION(nn.Module):
         
         distance = R * c
         
-        return distance
+        return (distance**2+self.depth**2)**0.5
 
     def LossFunction(self):
         loss = 0
@@ -164,9 +169,9 @@ class FIND_LOCATION(nn.Module):
 
             self.scheduler.step()
         
-        lat, lon, v = self.lat.detach().numpy(),self.lon.detach().numpy(),self.v.detach().numpy()
+        lat, lon, depth, v = self.lat.detach().numpy(),self.lon.detach().numpy(),self.depth.detach().numpy(),self.v.detach().numpy()
 
-        return lat,lon,v,losses
+        return lat,lon,depth,v,losses
 
 
 class STA_LTA_LOCATION(UI_OBJ):#(nn.Module):
@@ -232,11 +237,13 @@ class STA_LTA_LOCATION(UI_OBJ):#(nn.Module):
         time = startTime
         warnEQ = False
 
-        resLat,resLon,resV = None,None,None
+        resLat,resLon,resDepth,resV = None,None,None,None
         
         outTime = []
         outLat = []
         outLong = []
+        outDepth = []
+
         outC = []
         outRec = []
         warn = []
@@ -245,58 +252,79 @@ class STA_LTA_LOCATION(UI_OBJ):#(nn.Module):
         while time<EndTime:
             time += datetime.timedelta(seconds=0.45)
 
-            for station in self.stations:
-                station.counter -= 1
+            if lastLength<self.stationMax :
 
-                if station.counter<0 and not(station in trigedStations):
-                    t = station.GetTrigged(time)
-                    if t!=False:  
-                        station.trigTime = t
-                        trigedStations.append(station)
+                for station in self.stations:
+                    station.counter -= 1
 
-                    if len(trigedStations)>=self.stationMin:
-                        warnEQ = True
-                
-            spendingTime.append(time_lib.time())
+                    if station.counter<0 and not(station in trigedStations):
+                        t = station.GetTrigged(time)
+                        if t!=False:  
+                            station.trigTime = t
+                            trigedStations.append(station)
 
-            if warnEQ==False:
-                timeLimit = time-datetime.timedelta(seconds=self.removeTrigTime)
-                removeIdx = []
-                for i in range(len(trigedStations)):
-                    if trigedStations[i].trigTime<timeLimit:
-                        removeIdx.append(i)
-                
-                removeIdx.reverse()
-                for i in removeIdx:
-                    del trigedStations[i]
-            
-            elif warnEQ==True:
-                if lastLength != len(trigedStations):
-                    summary = [((x.place.lat,x.place.long),x.trigTime) for x in trigedStations]
-                    summarySorted = sorted(summary,key=lambda x:x[1])
+                        if len(trigedStations)>=self.stationMin:
+                            warnEQ = True
+                    
+                spendingTime.append(time_lib.time())
 
-                    model = FIND_LOCATION(summarySorted[:self.stationMax],lr=1e-2,stepSize=100,gamma=.1,initialLat=resLat,initialLon=resLon,initialV=resV)
-                    resLat,resLon,resV,loss = model.learn(self.iterations)
+                if warnEQ==False:
+                    timeLimit = time-datetime.timedelta(seconds=self.removeTrigTime)
+                    removeIdx = []
+                    for i in range(len(trigedStations)):
+                        if trigedStations[i].trigTime<timeLimit:
+                            removeIdx.append(i)
+                    
+                    removeIdx.reverse()
+                    for i in removeIdx:
+                        del trigedStations[i]
+                            
+                elif warnEQ==True:
+                    if lastLength != len(trigedStations):
+                        summary = [((x.place.lat,x.place.long),x.trigTime) for x in trigedStations]
+                        summarySorted = sorted(summary,key=lambda x:x[1])
 
-                    if GetDistance((resLat,resLon),summarySorted[0][0])>50:
-                        resLat,resLon = summarySorted[0][0]
-                        resLat -= 0.01
-                        resLon += 0.01
+                        model = FIND_LOCATION(summarySorted[:self.stationMax],lr=1e-2,stepSize=100,gamma=.1,initialLat=resLat,initialLon=resLon,initialDepth=resDepth,initialV=resV)
+                        resLat,resLon,resDepth,resV,loss = model.learn(self.iterations)
 
-                else :
-                    pass
+                        # model = FIND_LOCATION(summarySorted[:self.stationMax],lr=1e-2,stepSize=100,gamma=.1)
+                        # resLat1,resLon1,resDepth1,resV1,loss1 = model.learn(self.iterations)
 
-                lastLength = len(trigedStations)
+                        # if loss1[-1]<loss[-1]:
+                        #     resLat,resLon,resDepth,resV,loss = resLat1,resLon1,resDepth1,resV1,loss1
 
-            spendingTime[-1] = time_lib.time()-spendingTime[-1]
+                        # print(resDepth)
+                        # plt.plot(loss)
+                        # plt.show()
+
+                        if GetDistance((resLat,resLon),summarySorted[0][0])>50:
+                            resLat,resLon = summarySorted[0][0]
+                            resLat -= 0.01
+                            resLon += 0.01
+                            resDepth *= 0
+                            resDepth += 20
+
+                    else :
+                        pass
+
+                    lastLength = len(trigedStations)
+
+                spendingTime[-1] = time_lib.time()-spendingTime[-1]
+
+            else:
+                spendingTime.append(0.0)
 
             outTime.append(time)
             outLat.append(resLat)
             outLong.append(resLon)
-            outC.append(resV)
+            # outDepth.append(resDepth)
+
+            outC.append(resDepth)
             warn.append(warnEQ)
             
             outRec.append([{'place':st.place,'name':st.name,'pga':st.GetPga(time)[1]} for st in trigedStations])
+            # print(warnEQ)
+
 
         outLat = [0 if x==None else x for x in outLat]
         outLong = [0 if x==None else x for x in outLong]
