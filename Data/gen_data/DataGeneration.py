@@ -65,7 +65,7 @@ class DATA_GENERATOR(UI_OBJ):
         # self.baseSignal = baseSignal
 
         
-    def run(self):
+    def run(self,stations:list=[]):
         self.importParameters()
         
         # np.random.seed(531)
@@ -84,8 +84,11 @@ class DATA_GENERATOR(UI_OBJ):
                                             signal=self.baseSignal, center=self.center)
         earthquake_time = datetime.datetime(2020, 8, 9, 15, 0, 0)
         interval = datetime.timedelta(milliseconds = 1000/self.signalFreq)
+        if stations==[]:
+            stations = [PLACES.random(self.world_width,self.world_width,self.center.lat,self.center.long) 
+                        for _ in range(self.numStations)]
         for i in range(self.numStations):
-            stationPlace = PLACES.random(self.world_width,self.world_width,self.center.lat,self.center.long)
+            stationPlace = stations.pop()
             signal = self.generator.WaveGenerate(x=stationPlace.lat,y=stationPlace.long,centerX=self.center.lat,centerY=self.center.long)
             time = np.array([earthquake_time+interval*i for i in range(len(signal))]) + datetime.timedelta(seconds=np.random.rand()*self.timeNoise)
             stations.append(STATION_RECORD(stationPlace,self.signalFreq,time,name=str(i),data=signal))
